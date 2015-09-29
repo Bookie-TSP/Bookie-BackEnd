@@ -13,4 +13,11 @@ class SessionsController < ApplicationController
       render json: { errors: "Invalid email or password" }, status: 422
     end
   end
+
+  def destroy
+    member = Member.find_by(auth_token: params[:id])
+    member.generate_authentication_token!
+    member.save
+    head 204
+  end
 end

@@ -11,10 +11,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150928070958) do
+ActiveRecord::Schema.define(version: 20150929020053) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "chaos", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "members", force: :cascade do |t|
     t.string   "email"
@@ -25,8 +30,11 @@ ActiveRecord::Schema.define(version: 20150928070958) do
     t.string   "identification_number"
     t.string   "gender"
     t.date     "birth_date"
-    t.datetime "created_at",            null: false
-    t.datetime "updated_at",            null: false
+    t.datetime "created_at",                         null: false
+    t.datetime "updated_at",                         null: false
+    t.string   "auth_token",            default: ""
   end
+
+  add_index "members", ["auth_token"], name: "index_members_on_auth_token", unique: true, using: :btree
 
 end

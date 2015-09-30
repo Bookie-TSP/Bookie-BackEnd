@@ -55,4 +55,51 @@ RSpec.describe Api::V1::MembersController, type: :controller do
     end
   end
 
+  describe "PUT/PATCH #update" do
+
+    context "when is successfully updated" do
+      before(:each) do
+        @member = FactoryGirl.create :member
+        patch :update, { id: @member.id,
+                         member: { email: "newmail@example.com" } }, format: :json
+      end
+
+      it "renders the json representation for the updated user" do
+        member_response = JSON.parse(response.body, symbolize_names: true)
+        expect(member_response[:email]).to eql "newmail@example.com"
+      end
+
+      it { should respond_with 200 }
+    end
+
+    context "when is not created" do
+      before(:each) do
+        @member = FactoryGirl.create :member
+        patch :update, { id: @member.id,
+                         member: { email: "bademail.com" } }, format: :json
+      end
+
+      it "renders an errors json" do
+        member_response = JSON.parse(response.body, symbolize_names: true)
+        expect(member_response).to have_key(:errors)
+      end
+
+      it "renders the json errors on whye the user could not be created" do
+        member_response = JSON.parse(response.body, symbolize_names: true)
+        expect(member_response[:errors][:email]).to include "is invalid"
+      end
+
+      it { should respond_with 422 }
+    end
+  end
+
+  describe "DELETE #destroy" do
+    before(:each) do
+      @member = FactoryGirl.create :member
+      delete :destroy, { id: @member.id }, format: :json
+    end
+
+    it { should respond_with 204 }
+  end
+
 end

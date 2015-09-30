@@ -14,6 +14,22 @@ class Api::V1::MembersController < ApplicationController
     end
   end
 
+  def update
+    member = Member.find(params[:id])
+
+    if member.update(member_params)
+      render json:  member, status: 200, location: [:api, member]
+    else
+      render json: { errors: member.errors }, status: 422
+    end
+  end
+
+  def destroy
+    member = Member.find(params[:id])
+    member.destroy
+    head 204
+  end
+
   private
 
     def member_params

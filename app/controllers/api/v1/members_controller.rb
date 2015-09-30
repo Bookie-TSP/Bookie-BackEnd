@@ -1,4 +1,5 @@
 class Api::V1::MembersController < ApplicationController
+  before_action :authenticate_with_token!, only: [:update, :destroy]
 	respond_to :json
 
   def show
@@ -15,7 +16,7 @@ class Api::V1::MembersController < ApplicationController
   end
 
   def update
-    member = Member.find(params[:id])
+    member = current_user
 
     if member.update(member_params)
       render json:  member, status: 200, location: [:api, member]
@@ -25,8 +26,7 @@ class Api::V1::MembersController < ApplicationController
   end
 
   def destroy
-    member = Member.find(params[:id])
-    member.destroy
+    current_user.destroy
     head 204
   end
 

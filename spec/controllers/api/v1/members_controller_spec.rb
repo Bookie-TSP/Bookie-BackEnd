@@ -61,6 +61,7 @@ RSpec.describe Api::V1::MembersController, type: :controller do
     context "when is successfully updated" do
       before(:each) do
         @member = FactoryGirl.create :member
+        request.headers['Authorization'] = @member.auth_token
         patch :update, { id: @member.id,
                          member: { email: "newmail@example.com" } }, format: :json
       end
@@ -76,6 +77,7 @@ RSpec.describe Api::V1::MembersController, type: :controller do
     context "when is not created" do
       before(:each) do
         @member = FactoryGirl.create :member
+        request.headers['Authorization'] = @member.auth_token
         patch :update, { id: @member.id,
                          member: { email: "bademail.com" } }, format: :json
       end
@@ -97,6 +99,7 @@ RSpec.describe Api::V1::MembersController, type: :controller do
   describe "DELETE #destroy" do
     before(:each) do
       @member = FactoryGirl.create :member
+      request.headers['Authorization'] = @member.auth_token
       delete :destroy, { id: @member.id }, format: :json
     end
 

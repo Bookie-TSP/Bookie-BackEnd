@@ -36,4 +36,16 @@ RSpec.describe Api::V1::SessionsController, type: :controller do
    		it { should respond_with 422 }
   	end
 	end
+
+	describe "DELETE #destroy" do
+
+    before(:each) do
+      @member = FactoryGirl.create :member
+      sign_in @member
+      delete :destroy, id: @member.auth_token
+    end
+
+    it { should respond_with 204 }
+
+  end
 end

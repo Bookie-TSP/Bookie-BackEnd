@@ -11,7 +11,7 @@ class Api::V1::MembersController < ApplicationController
     if member.save
       render json: member, status: 201, location: [:api, member]
     else
-      render json: { errors: member.errors }, status: 422
+      render json: member.errors, status: 422
     end
   end
 

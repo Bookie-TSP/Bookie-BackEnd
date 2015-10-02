@@ -5,6 +5,7 @@ class Member < ActiveRecord::Base
          :recoverable, :rememberable, :trackable, :validatable, :timeoutable
 
   validates :auth_token, uniqueness: true
+  validates :first_name, :last_name, :phone_number, :identification_number, presence: true
 	before_create :generate_authentication_token!
 
   def generate_authentication_token!

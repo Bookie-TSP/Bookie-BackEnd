@@ -33,6 +33,6 @@ class Api::V1::MembersController < ApplicationController
   private
 
     def member_params
-      params.require(:member).permit(:email, :password, :password_confirmation)
+      params.require(:member).permit(:email, :password, :password_confirmation, :first_name, :last_name, :phone_number, :identification_number)
     end
 end

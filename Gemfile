@@ -58,5 +58,7 @@ group :development, :test do
   gem "factory_girl_rails"
   gem "ffaker"
   gem "shoulda-matchers"
-end
 
+  gem 'pry-rails', '0.3.4' # a better console
+  gem 'pry-byebug' , '3.1.0'
+end

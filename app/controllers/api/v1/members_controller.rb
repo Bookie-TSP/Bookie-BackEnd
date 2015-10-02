@@ -3,7 +3,7 @@ class Api::V1::MembersController < ApplicationController
 	respond_to :json
 
   def show
-    respond_with Member.find(params[:id])
+    respond_with Member.find(params[:id]), except: [:auth_token]
   end
 
   def create

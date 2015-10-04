@@ -3,7 +3,7 @@ class Api::V1::MembersController < ApplicationController
 	respond_to :json
 
   def profile_detail
-    respond_with current_user, except: [:auth_token]
+    respond_with current_user, except: [:auth_token, :created_at, :updated_at]
   end
 
   def show

@@ -1,6 +1,10 @@
 class Api::V1::MembersController < ApplicationController
-  before_action :authenticate_with_token!, only: [:update, :destroy]
+  before_action :authenticate_with_token!, only: [:update, :destroy, :profile_detail]
 	respond_to :json
+
+  def profile_detail
+    respond_with current_user, except: [:auth_token]
+  end
 
   def show
     respond_with Member.find(params[:id]), except: [:auth_token]

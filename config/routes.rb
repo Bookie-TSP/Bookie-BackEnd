@@ -9,6 +9,7 @@ Rails.application.routes.draw do
       # We are going to list our resources here
       resources :members, :only => [:show, :create, :update, :destroy]
       resources :sessions, :only => [:create, :destroy]
+      get '/myprofile' => 'members#profile_detail'
     end
   end
 end

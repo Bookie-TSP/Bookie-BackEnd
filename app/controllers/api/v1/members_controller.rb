@@ -11,11 +11,18 @@ class Api::V1::MembersController < ApplicationController
   end
 
   def create
-    member = Member.new(member_params)
-    if member.save
-      render json: member, status: 201, location: [:api, member]
-    else
-      render json: { errors: member.errors }, status: 422
+    ActiveRecord::Base.transaction do
+      member = Member.new(member_params)
+      if member.save!
+        address_temp = member.addresses.build(address_params)
+        if address_temp.save!
+          render json: member.to_json(:include => :addresses), status: 201, location: [:api, member]
+        else
+          render json: { errors: address_temp.errors }, status: 422
+        end
+      else
+        render json: { errors: member.errors }, status: 422
+      end
     end
   end
 
@@ -39,5 +46,9 @@ class Api::V1::MembersController < ApplicationController
     def member_params
       params.require(:member).require(:password_confirmation)
       params.require(:member).permit(:email, :password, :password_confirmation, :first_name, :last_name, :phone_number, :identification_number)
+    end
+
+    def address_params
+      params.require(:address).permit(:first_name, :last_name, :latitude, :logitude, :information)
     end
 end

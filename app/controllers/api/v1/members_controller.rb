@@ -3,11 +3,11 @@ class Api::V1::MembersController < ApplicationController
 	respond_to :json
 
   def profile_detail
-    respond_with current_user, except: [:auth_token, :created_at, :updated_at]
+    respond_with current_user.to_json(:include => :addresses), except: [:auth_token, :created_at, :updated_at]
   end
 
   def show
-    respond_with Member.find(params[:id]), except: [:auth_token]
+    respond_with Member.find(params[:id]).to_json(:include => :addresses), except: [:auth_token]
   end
 
   def create
@@ -30,7 +30,7 @@ class Api::V1::MembersController < ApplicationController
     member = current_user
 
     if member.update(member_params)
-      render json:  member, status: 200, location: [:api, member]
+      render json:  member.to_json(:include => :addresses), status: 200, location: [:api, member]
     else
       render json: { errors: member.errors }, status: 422
     end

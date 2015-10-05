@@ -1,3 +1,4 @@
 class Address < ActiveRecord::Base
-  belongs_to :Member
+	validates :first_name, :last_name, :latitude, :logitude, :information, presence: true
+  belongs_to :member, dependent: :destroy
 end

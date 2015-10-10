@@ -4,7 +4,7 @@ class CreateAddresses < ActiveRecord::Migration
       t.string :first_name
       t.string :last_name
       t.string :latitude
-      t.string :logitude
+      t.string :longitude
       t.string :information
       t.references :member, index: true, foreign_key: true
 

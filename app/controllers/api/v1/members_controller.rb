@@ -28,11 +28,15 @@ class Api::V1::MembersController < ApplicationController
 
   def update
     member = current_user
-
-    if member.update(member_params)
-      render json:  member.to_json(:include => :addresses), status: 200, location: [:api, member]
+    member_password = member_update_params[:password]
+    if member.valid_password? member_password
+      if member.update(member_params)
+        render json:  member.to_json(:except => :auth_token), status: 200, location: [:api, member]
+      else
+        render json: { errors: member.errors }, status: 422
+      end
     else
-      render json: { errors: member.errors }, status: 422
+      render json: { errors: 'Wrong password' }, status: 422
     end
   end
 
@@ -45,10 +49,15 @@ class Api::V1::MembersController < ApplicationController
 
     def member_params
       params.require(:member).require(:password_confirmation)
-      params.require(:member).permit(:email, :password, :password_confirmation, :first_name, :last_name, :phone_number, :identification_number)
+      params.require(:member).permit(:email, :password, :password_confirmation, :first_name, :last_name, :phone_number, :identification_number, :gender, :birth_date)
     end
 
     def address_params
-      params.require(:address).permit(:first_name, :last_name, :latitude, :logitude, :information)
+      params.require(:address).permit(:first_name, :last_name, :latitude, :longitude, :information)
+    end
+
+    def member_update_params
+      params.require(:member).require(:password)
+      params.require(:member).permit(:email, :password, :first_name, :last_name, :phone_number, :identification_number, :gender, :birth_date)
     end
 end

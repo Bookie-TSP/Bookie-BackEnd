@@ -7,10 +7,9 @@ Rails.application.routes.draw do
     # We are going to list our resources here
     scope module: :v1, constraints: ApiConstraints.new(version: 1, default: true) do
       # We are going to list our resources here
-      resources :members, :only => [:show, :create, :destroy] do
-        resources :addresses
-      end
+      resources :members, :only => [:show, :create, :destroy]
       resources :sessions, :only => [:create, :destroy]
+      resources :books, :only => [:index, :show, :create]
       get '/myprofile' => 'members#profile_detail'
       put '/members' => 'members#update'
     end

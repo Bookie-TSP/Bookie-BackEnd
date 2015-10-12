@@ -40,6 +40,14 @@ ActiveRecord::Schema.define(version: 20151011113335) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "carts", force: :cascade do |t|
+    t.integer  "member_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "carts", ["member_id"], name: "index_carts_on_member_id", using: :btree
+
   create_table "line_stocks", force: :cascade do |t|
     t.integer  "member_id"
     t.integer  "quantity"
@@ -94,6 +102,7 @@ ActiveRecord::Schema.define(version: 20151011113335) do
   add_index "stocks", ["line_stock_id"], name: "index_stocks_on_line_stock_id", using: :btree
 
   add_foreign_key "addresses", "members"
+  add_foreign_key "carts", "members"
   add_foreign_key "line_stocks", "members"
   add_foreign_key "stocks", "books"
   add_foreign_key "stocks", "line_stocks"

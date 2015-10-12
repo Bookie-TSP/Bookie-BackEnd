@@ -10,8 +10,7 @@ class Member < ActiveRecord::Base
   has_many :addresses, dependent: :destroy
   has_many :linestocks, dependent: :destroy
   has_many :stocks, through: :linestocks
-
-
+  has_one :cart
   def generate_authentication_token!
     begin
       self.auth_token = Devise.friendly_token

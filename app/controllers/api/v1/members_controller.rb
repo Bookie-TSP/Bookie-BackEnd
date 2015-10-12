@@ -13,8 +13,8 @@ class Api::V1::MembersController < ApplicationController
   def create
     ActiveRecord::Base.transaction do
       member = Member.new(member_params)
-      cart_temp = member.build_cart
       if member.save!
+        cart_temp = member.create_cart
         address_temp = member.addresses.build(address_params)
         if address_temp.save!
           render json: member.to_json(:include => :addresses), status: 201, location: [:api, member]

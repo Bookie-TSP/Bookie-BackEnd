@@ -8,7 +8,7 @@ class Member < ActiveRecord::Base
   validates :first_name, :last_name, :phone_number, :identification_number, presence: true
 	before_create :generate_authentication_token!
   has_many :addresses, dependent: :destroy
-  has_many :linestocks, dependent: :destroy
+  has_many :line_stocks, dependent: :destroy
   has_many :stocks, through: :linestocks
   has_one :cart
   def generate_authentication_token!

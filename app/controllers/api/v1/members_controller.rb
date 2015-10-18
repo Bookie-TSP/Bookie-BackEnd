@@ -1,5 +1,5 @@
 class Api::V1::MembersController < ApplicationController
-  before_action :authenticate_with_token!, only: [:update, :destroy, :profile_detail]
+  before_action :authenticate_with_token!, only: [:update, :destroy, :profile_detail, :create_stock]
 	respond_to :json
 
   def profile_detail
@@ -41,6 +41,19 @@ class Api::V1::MembersController < ApplicationController
     end
   end
 
+  def create_stock
+    member = current_user
+    line_stock_temp = member.line_stocks.build(line_stock_params)
+    line_stock_temp.save
+    line_stock = member.line_stocks.find(line_stock_temp.id)
+    (1..line_stock_temp.quantity).each do |i|
+    stock_temp = line_stock.stocks.build(stock_params)
+    stock_temp.member_id = member.id
+    end
+    line_stock.save
+    render json: member.to_json(:include => :line_stocks), status: 201, location: [:api, member]
+  end
+
   def destroy
     current_user.destroy
     head 204
@@ -60,5 +73,13 @@ class Api::V1::MembersController < ApplicationController
     def member_update_params
       params.require(:member).require(:password)
       params.require(:member).permit(:email, :password, :first_name, :last_name, :phone_number, :identification_number, :gender, :birth_date)
+    end
+
+    def line_stock_params
+      params.require(:line_stock).permit(:member_id, :quantity, :type)
+    end
+
+    def stock_params
+      params.require(:stock).permit(:book_id, :status, :type, :condition, :duration, :terms)
     end
 end

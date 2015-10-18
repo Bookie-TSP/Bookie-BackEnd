@@ -21,6 +21,7 @@ Rails.application.routes.draw do
       resources :books, :only => [:index, :show, :create]
       get '/myprofile' => 'members#profile_detail'
       put '/members' => 'members#update'
+      post '/members/stocks' => 'members#create_stock'
     end
   end
 end

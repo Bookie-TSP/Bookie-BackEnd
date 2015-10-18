@@ -43,14 +43,16 @@ class Api::V1::MembersController < ApplicationController
 
   def create_stock
     member = current_user
-    line_stock_temp = member.line_stocks.build(line_stock_params)
+    line_stock_temp = member.line_stocks.build
+    line_stock_temp.quantity = stock_params[:quantity]
+    line_stock_temp.type = stock_params[:type]
     line_stock_temp.save
-    line_stock = member.line_stocks.find(line_stock_temp.id)
+    params[:stock].delete :quantity
     (1..line_stock_temp.quantity).each do |i|
-    stock_temp = line_stock.stocks.build(stock_params)
+    stock_temp = line_stock_temp.stocks.build(stock_params)
     stock_temp.member_id = member.id
     end
-    line_stock.save
+    line_stock_temp.save
     render json: member.to_json(:include => :line_stocks), status: 201, location: [:api, member]
   end
 
@@ -75,11 +77,7 @@ class Api::V1::MembersController < ApplicationController
       params.require(:member).permit(:email, :password, :first_name, :last_name, :phone_number, :identification_number, :gender, :birth_date)
     end
 
-    def line_stock_params
-      params.require(:line_stock).permit(:member_id, :quantity, :type)
-    end
-
     def stock_params
-      params.require(:stock).permit(:book_id, :status, :type, :condition, :duration, :terms)
+      params.require(:stock).permit(:book_id, :status, :type, :price, :condition, :duration, :terms, :quantity)
     end
 end

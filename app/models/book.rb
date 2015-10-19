@@ -1,5 +1,6 @@
 class Book < ActiveRecord::Base
-	validates_uniqueness_of :ISBN, :allow_blank => true, :allow_nil => true
-  validates :name, :author, :language, presence: true
+	serialize :authors
+	validates_uniqueness_of :ISBN10, :ISBN13, :allow_blank => true, :allow_nil => true
+  validates :title, :authors, :language, :description, :cover_image_url, presence: true
 	has_many :stocks, :dependent => :destroy
 end

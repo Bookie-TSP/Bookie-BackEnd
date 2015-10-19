@@ -1,5 +1,5 @@
 class Api::V1::BooksController < ApplicationController
-	#before_action :authenticate_with_token!, only: :create
+	before_action :authenticate_with_token!, only: :create
 	respond_to :json
 
 	def index
@@ -22,6 +22,6 @@ class Api::V1::BooksController < ApplicationController
 	private
 
 	  def book_params
-      params.require(:book).permit(:name, :ISBN, :author, :language, :pages, :publisher)
+      params.require(:book).permit(:title, :ISBN10, :ISBN13, :description, :publish_date, :cover_image_url, :language, :pages, :publisher, :authors => [])
     end
 end

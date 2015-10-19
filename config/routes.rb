@@ -1,11 +1,6 @@
 require 'api_constraints'
 
 Rails.application.routes.draw do
-  get 'cart/create'
-
-  get 'cart/edit'
-
-  get 'cart/destroy'
 
   devise_for :members
   # Api definition
@@ -15,7 +10,6 @@ Rails.application.routes.draw do
       # We are going to list our resources here
       resources :members, :only => [:show, :create, :destroy] do
         resources :addresses
-        resources :cart
       end
       resources :sessions, :only => [:create, :destroy]
       resources :books, :only => [:index, :show, :create]
@@ -23,6 +17,7 @@ Rails.application.routes.draw do
       put '/members' => 'members#update'
       post '/members/stocks' => 'members#create_stock'
       post '/members/cart/add' => 'members#add_stock_to_cart'
+      get '/members/cart/show' => 'members#get_stock_in_cart'
     end
   end
 end

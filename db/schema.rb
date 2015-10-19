@@ -30,14 +30,18 @@ ActiveRecord::Schema.define(version: 20151019050851) do
   add_index "addresses", ["member_id"], name: "index_addresses_on_member_id", using: :btree
 
   create_table "books", force: :cascade do |t|
-    t.string   "name"
-    t.string   "ISBN"
-    t.string   "author"
+    t.string   "title"
+    t.string   "ISBN10"
+    t.string   "ISBN13"
+    t.text     "authors"
     t.string   "language"
     t.integer  "pages"
     t.string   "publisher"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.date     "publish_date"
+    t.string   "description"
+    t.string   "cover_image_url"
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
   end
 
   create_table "carts", force: :cascade do |t|

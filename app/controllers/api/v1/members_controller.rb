@@ -68,19 +68,31 @@ class Api::V1::MembersController < ApplicationController
   end
 
   def add_stock_to_cart
-    temp_stock = Stock.find_by_id(add_to_cart_params[:stock_id])
+    temp_stock = Stock.find_by_id(cart_params[:stock_id])
     if temp_stock.nil?
       render json: { errors: 'Stock not found' }, status: 422
-    elsif current_user.cart.stocks.find_by_id(add_to_cart_params[:stock_id])
+    elsif current_user.cart.stocks.find_by_id(cart_params[:stock_id])
       render json: { errors: 'This stock is already in your cart' }, status: 422
     else
       current_user.cart.stocks << temp_stock
-      render json: current_user.cart.to_json(:include => :stocks), status: 201
+      render json: current_user.cart.to_json(:include => :stocks), status: 200
+    end
+  end
+
+  def remove_stock_from_cart
+    temp_stock = Stock.find_by_id(cart_params[:stock_id])
+    if temp_stock.nil?
+      render json: { errors: 'Stock not found' }, status: 422
+    elsif current_user.cart.stocks.find_by_id(cart_params[:stock_id])
+      current_user.cart.stocks.delete(temp_stock)
+      render json: { message: 'Successfully remove this stock from your cart' }, status: 200
+    else
+      render json: { errors: 'This stock is not in this cart' }, status: 422
     end
   end
 
   def get_stock_in_cart
-    render json: current_user.cart.to_json(:include => :stocks), status: 201
+    render json: current_user.cart.to_json(:include => :stocks), status: 200
   end
 
   def destroy
@@ -108,8 +120,7 @@ class Api::V1::MembersController < ApplicationController
       params.require(:stock).permit(:book_id, :status, :type, :price, :condition, :duration, :terms, :quantity)
     end
 
-    def add_to_cart_params
-      logger.debug(params)
+    def cart_params
       params.require(:stock).permit(:stock_id)
     end
 end

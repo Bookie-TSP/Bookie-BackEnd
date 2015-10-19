@@ -17,6 +17,7 @@ Rails.application.routes.draw do
       put '/members' => 'members#update'
       post '/members/stocks' => 'members#create_stock'
       post '/members/cart/add' => 'members#add_stock_to_cart'
+      post '/members/cart/remove' => 'members#remove_stock_from_cart'
       get '/members/cart/show' => 'members#get_stock_in_cart'
     end
   end

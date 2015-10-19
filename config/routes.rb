@@ -22,6 +22,7 @@ Rails.application.routes.draw do
       get '/myprofile' => 'members#profile_detail'
       put '/members' => 'members#update'
       post '/members/stocks' => 'members#create_stock'
+      post '/members/cart/add' => 'members#add_stock_to_cart'
     end
   end
 end

@@ -13,10 +13,10 @@ class Api::V1::MembersController < ApplicationController
   def create
     ActiveRecord::Base.transaction do
       member = Member.new(member_params)
-      if member.save!
+      if member.save
         cart_temp = member.create_cart
         address_temp = member.addresses.build(address_params)
-        if address_temp.save!
+        if address_temp.save
           render json: member.to_json(:include => :addresses), status: 201, location: [:api, member]
         else
           render json: { errors: address_temp.errors }, status: 422
@@ -44,24 +44,27 @@ class Api::V1::MembersController < ApplicationController
   def create_stock
     stock_temp = nil
     temp_book = Book.find_by_id(stock_params[:book_id])
-    if temp_book.nil?
-      render json: { errors: 'Book not found' }, status: 422
-    else
-      line_stock_temp = current_user.line_stocks.build
-      line_stock_temp.quantity = stock_params[:quantity]
-      line_stock_temp.type = stock_params[:type]
-      params[:stock].delete :quantity
-      (1..line_stock_temp.quantity).each do |i|
-        stock_temp = line_stock_temp.stocks.build(stock_params)
-        stock_temp.member_id = current_user.id
-      end
-      if line_stock_temp.save
-        render json: current_user.to_json(:include => :line_stocks), status: 201, location: [:api, current_user]
+    ActiveRecord::Base.transaction do
+      if temp_book.nil?
+        render json: { errors: 'Book not found' }, status: 422
       else
-        if stock_temp.save
-          render json: { errors: line_stock_temp.errors }, status: 422
+        line_stock_temp = current_user.line_stocks.build
+        line_stock_temp.quantity = stock_params[:quantity]
+        line_stock_temp.type = stock_params[:type]
+        params[:stock].delete :quantity
+        (1..line_stock_temp.quantity).each do |i|
+          stock_temp = line_stock_temp.stocks.build(stock_params)
+          stock_temp.member_id = current_user.id
+          stock_temp.book = temp_book
+        end
+        if line_stock_temp.save
+          render json: current_user.to_json(:include => :line_stocks), status: 201, location: [:api, current_user]
         else
-          render json: { errors: stock_temp.errors }, status: 422
+          if stock_temp.save
+            render json: { errors: line_stock_temp.errors }, status: 422
+          else
+            render json: { errors: stock_temp.errors }, status: 422
+          end
         end
       end
     end
@@ -92,7 +95,7 @@ class Api::V1::MembersController < ApplicationController
   end
 
   def get_stock_in_cart
-    render json: current_user.cart.to_json(:include => :stocks), status: 200
+    render json: current_user.cart.to_json(:include => { :stocks => { :include => :book }}), status: 200
   end
 
   def destroy

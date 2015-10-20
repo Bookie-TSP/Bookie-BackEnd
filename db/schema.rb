@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151002114552) do
+ActiveRecord::Schema.define(version: 20151019050851) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -28,6 +28,47 @@ ActiveRecord::Schema.define(version: 20151002114552) do
   end
 
   add_index "addresses", ["member_id"], name: "index_addresses_on_member_id", using: :btree
+
+  create_table "books", force: :cascade do |t|
+    t.string   "title"
+    t.string   "ISBN10"
+    t.string   "ISBN13"
+    t.text     "authors"
+    t.string   "language"
+    t.integer  "pages"
+    t.string   "publisher"
+    t.date     "publish_date"
+    t.string   "description"
+    t.string   "cover_image_url"
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
+  end
+
+  create_table "carts", force: :cascade do |t|
+    t.integer  "member_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "carts", ["member_id"], name: "index_carts_on_member_id", using: :btree
+
+  create_table "carts_stocks", id: false, force: :cascade do |t|
+    t.integer "cart_id",  null: false
+    t.integer "stock_id", null: false
+  end
+
+  add_index "carts_stocks", ["cart_id", "stock_id"], name: "index_carts_stocks_on_cart_id_and_stock_id", using: :btree
+  add_index "carts_stocks", ["stock_id", "cart_id"], name: "index_carts_stocks_on_stock_id_and_cart_id", using: :btree
+
+  create_table "line_stocks", force: :cascade do |t|
+    t.integer  "member_id"
+    t.integer  "quantity"
+    t.string   "type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "line_stocks", ["member_id"], name: "index_line_stocks_on_member_id", using: :btree
 
   create_table "members", force: :cascade do |t|
     t.string   "email",                  default: "", null: false
@@ -55,5 +96,26 @@ ActiveRecord::Schema.define(version: 20151002114552) do
   add_index "members", ["email"], name: "index_members_on_email", unique: true, using: :btree
   add_index "members", ["reset_password_token"], name: "index_members_on_reset_password_token", unique: true, using: :btree
 
+  create_table "stocks", force: :cascade do |t|
+    t.integer  "book_id"
+    t.integer  "line_stock_id"
+    t.integer  "member_id"
+    t.string   "status"
+    t.float    "price"
+    t.string   "type"
+    t.string   "condition"
+    t.string   "duration"
+    t.string   "terms"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
+  end
+
+  add_index "stocks", ["book_id"], name: "index_stocks_on_book_id", using: :btree
+  add_index "stocks", ["line_stock_id"], name: "index_stocks_on_line_stock_id", using: :btree
+
   add_foreign_key "addresses", "members"
+  add_foreign_key "carts", "members"
+  add_foreign_key "line_stocks", "members"
+  add_foreign_key "stocks", "books"
+  add_foreign_key "stocks", "line_stocks"
 end

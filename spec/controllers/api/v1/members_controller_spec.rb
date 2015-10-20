@@ -19,7 +19,6 @@ RSpec.describe Api::V1::MembersController, type: :controller do
   end
 
   describe "POST #create" do
-
     context "when is successfully created" do
       before(:each) do
         @member_attributes = FactoryGirl.attributes_for :member
@@ -57,7 +56,6 @@ RSpec.describe Api::V1::MembersController, type: :controller do
   end
 
   describe "PUT/PATCH #update" do
-
     context "when is successfully updated" do
       before(:each) do
         @member = FactoryGirl.create :member

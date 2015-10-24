@@ -88,7 +88,7 @@ class Api::V1::MembersController < ApplicationController
       render json: { errors: 'Stock not found' }, status: 422
     elsif current_user.cart.stocks.find_by_id(cart_params[:stock_id])
       current_user.cart.stocks.delete(temp_stock)
-      render json: { message: 'Successfully remove this stock from your cart' }, status: 200
+      render json: current_user.cart.to_json(:include => :stocks), status: 200
     else
       render json: { errors: 'This stock is not in this cart' }, status: 422
     end

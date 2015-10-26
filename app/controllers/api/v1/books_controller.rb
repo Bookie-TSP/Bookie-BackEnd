@@ -7,7 +7,7 @@ class Api::V1::BooksController < ApplicationController
 	end
 
 	def show
-		respond_with Book.find(params[:id])
+		respond_with Book.find(params[:id]).to_json(:include => :stocks)
 	end
 
 	def create

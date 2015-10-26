@@ -1,9 +1,24 @@
 class Api::V1::MembersController < ApplicationController
-  before_action :authenticate_with_token!, only: [:update, :destroy, :profile_detail, :create_stock, :add_stock_to_cart, :get_stock_in_cart]
+  before_action :authenticate_with_token!, only: [:update, :destroy, :profile_detail, :create_stock, :add_stock_to_cart, :get_stock_in_cart, :edit_address]
 	respond_to :json
 
   def profile_detail
     respond_with current_user.to_json(:include => :addresses), except: [:auth_token, :created_at, :updated_at]
+  end
+
+  def edit_address
+    member_password = edit_address_params[:password]
+    if current_user.valid_password? member_password
+      params[:address].delete :password
+      temp_address = current_user.addresses.first
+      if temp_address.update(edit_address_params)
+        render json:  current_user.to_json(:include => :addresses), status: 200, location: [:api, current_user]
+      else
+        render json: { errors: temp_address.errors }, status: 422
+      end
+    else
+      render json: { errors: 'Wrong password' }, status: 422
+    end
   end
 
   def show
@@ -58,7 +73,7 @@ class Api::V1::MembersController < ApplicationController
           stock_temp.book = temp_book
         end
         if line_stock_temp.save
-          render json: current_user.to_json(:include => :line_stocks), status: 201, location: [:api, current_user]
+          render json: current_user.to_json(:include => [:line_stocks, :addresses]), status: 201, location: [:api, current_user]
         else
           if stock_temp.save
             render json: { errors: line_stock_temp.errors }, status: 422
@@ -108,6 +123,10 @@ class Api::V1::MembersController < ApplicationController
     def member_params
       params.require(:member).require(:password_confirmation)
       params.require(:member).permit(:email, :password, :password_confirmation, :first_name, :last_name, :phone_number, :identification_number, :gender, :birth_date)
+    end
+
+    def edit_address_params
+      params.require(:address).permit(:password, :first_name, :last_name, :latitude, :longitude, :information)
     end
 
     def address_params

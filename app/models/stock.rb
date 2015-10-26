@@ -4,4 +4,9 @@ class Stock < ActiveRecord::Base
   belongs_to :line_stock
   has_and_belongs_to_many :carts
   self.inheritance_column = :_type_disabled
+
+  def member
+  	temp_member = Member.find_by_id(self.member_id)
+  	temp_member.as_json(:include => :addresses)
+	end
 end

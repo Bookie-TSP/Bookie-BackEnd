@@ -1,5 +1,5 @@
 class Api::V1::MembersController < ApplicationController
-  before_action :authenticate_with_token!, only: [:update, :destroy, :profile_detail, :create_stock, :add_stock_to_cart, :get_stock_in_cart, :edit_address]
+  before_action :authenticate_with_token!, only: [:update, :destroy, :profile_detail, :create_stock, :add_stock_to_cart, :get_stock_in_cart, :edit_address, :get_my_stock]
 	respond_to :json
 
   def profile_detail
@@ -111,6 +111,10 @@ class Api::V1::MembersController < ApplicationController
 
   def get_stock_in_cart
     render json: current_user.cart.to_json(:include => { :stocks => { :include => :book }}), status: 200
+  end
+
+  def get_my_stock
+    render json: current_user.to_json(:include => {:stocks => { :include => :book }}), status: 200
   end
 
   def destroy

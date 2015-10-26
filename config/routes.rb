@@ -14,6 +14,7 @@ Rails.application.routes.draw do
       resources :sessions, :only => [:create, :destroy]
       resources :books, :only => [:index, :show, :create]
       get '/myprofile' => 'members#profile_detail'
+      get '/mystocks' => 'members#get_my_stock'
       put '/members' => 'members#update'
       post '/members/stocks' => 'members#create_stock'
       post '/members/cart/add' => 'members#add_stock_to_cart'

@@ -63,23 +63,53 @@ class Api::V1::MembersController < ApplicationController
       if temp_book.nil?
         render json: { errors: 'Book not found' }, status: 422
       else
-        line_stock_temp = current_user.line_stocks.build
-        line_stock_temp.quantity = stock_params[:quantity]
-        line_stock_temp.type = stock_params[:type]
-        params[:stock].delete :quantity
-        (1..line_stock_temp.quantity).each do |i|
-          stock_temp = line_stock_temp.stocks.build(stock_params)
-          stock_temp.member_id = current_user.id
-          stock_temp.book = temp_book
-        end
-        if line_stock_temp.save
-          render json: current_user.to_json(:include => [:line_stocks, :addresses]), status: 201, location: [:api, current_user]
-        else
-          if stock_temp.save
-            render json: { errors: line_stock_temp.errors }, status: 422
-          else
-            render json: { errors: stock_temp.errors }, status: 422
+        checker = 0
+        user_line_stocks = current_user.line_stocks
+        temp_stock_for_check = Stock.new(stock_params.except(:quantity))
+        temp_stock_for_check.member_id = current_user.id
+        user_line_stocks.each do |temp_line_stock|
+          if eql_attributes?(temp_line_stock.stocks.first, temp_stock_for_check)
+            checker = 1
+            stock_quantity = stock_params[:quantity]
+            params[:stock].delete :quantity
+            (1..stock_quantity).each do |i|
+              stock_temp = temp_line_stock.stocks.build(stock_params)
+              stock_temp.member_id = current_user.id
+              stock_temp.book = temp_book
+            end
+            temp_line_stock.quantity = temp_line_stock.stocks.size
+            if temp_line_stock.save
+              render json: current_user.to_json(:include => [:addresses, :line_stocks]), status: 201, location: [:api, current_user] and return
+            else
+              if stock_temp.save
+                render json: { errors: temp_line_stock.errors }, status: 422 and return
+              else
+                render json: { errors: stock_temp.errors }, status: 422 and return
+              end
+            end
           end
+        end
+        if checker == 0
+          line_stock_temp = current_user.line_stocks.build
+          line_stock_temp.quantity = stock_params[:quantity]
+          line_stock_temp.type = stock_params[:type]
+          params[:stock].delete :quantity
+          (1..line_stock_temp.quantity).each do |i|
+            stock_temp = line_stock_temp.stocks.build(stock_params)
+            stock_temp.member_id = current_user.id
+            stock_temp.book = temp_book
+          end
+          if line_stock_temp.save
+            render json: current_user.to_json(:include => [:addresses, :line_stocks]), status: 201, location: [:api, current_user]
+          else
+            if stock_temp.save
+              render json: { errors: line_stock_temp.errors }, status: 422
+            else
+              render json: { errors: stock_temp.errors }, status: 422
+            end
+          end
+        elsif checker == 1
+          render json: current_user.to_json(:include => [:addresses, :line_stocks]), status: 201, location: [:api, current_user]
         end
       end
     end
@@ -148,5 +178,17 @@ class Api::V1::MembersController < ApplicationController
 
     def cart_params
       params.require(:stock).permit(:stock_id)
+    end
+
+    def eql_attributes?(old_stock, new_stock)
+      meta = [:id, :created_at, :updated_at, :line_stock_id]
+      logger.debug('class1 = ' + old_stock.class.to_s)
+      logger.debug('class2 = ' + new_stock.class.to_s)
+      old_stock = old_stock.attributes.symbolize_keys.except(*meta)
+      new_stock = new_stock.attributes.symbolize_keys.except(*meta)
+      logger.debug('old = ' + old_stock.to_s)
+      logger.debug('new = ' + new_stock.to_s)
+      logger.debug('result = ' + (old_stock == new_stock).to_s)
+      old_stock == new_stock
     end
 end

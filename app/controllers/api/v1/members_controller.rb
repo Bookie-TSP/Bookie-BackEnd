@@ -143,7 +143,7 @@ class Api::V1::MembersController < ApplicationController
     end
 
     def stock_params
-      params.require(:stock).permit(:book_id, :status, :type, :price, :condition, :duration, :terms, :quantity)
+      params.require(:stock).permit(:book_id, :status, :type, :price, :condition, :duration, :terms, :quantity, :description)
     end
 
     def cart_params

@@ -10,6 +10,7 @@ class CreateStocks < ActiveRecord::Migration
       t.string :condition
       t.string :duration
       t.string :terms
+      t.string :description
 
       t.timestamps null: false
     end

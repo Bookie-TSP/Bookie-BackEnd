@@ -83,9 +83,11 @@ class Api::V1::MembersController < ApplicationController
   end
 
   def add_stock_to_cart
-    temp_stock = Stock.find_by_id(cart_params[:stock_id])
+    temp_stock = Stock.find_by_id(cart_params[:stock_id])  
     if temp_stock.nil?
       render json: { errors: 'Stock not found' }, status: 422
+    elsif temp_stock.member_id == current_user.id
+      render json: { error: 'You can\'t add your own stock to cart'}, status: 422
     elsif current_user.cart.stocks.find_by_id(cart_params[:stock_id])
       render json: { errors: 'This stock is already in your cart' }, status: 422
     else

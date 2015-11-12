@@ -84,16 +84,20 @@ class Api::V1::MembersController < ApplicationController
 
   def add_stock_to_cart
     line_stock = LineStock.find_by_id(cart_params[:line_stock_id])
+    if line_stock.nil?
+        render json: { errors: 'Stock not found' }, status: 422 and return
+    end
     stocks = line_stock.stocks
     counter = 0
-    stocks each do |stock|
+    stocks.each do |stock|
       if line_stock.nil?
         render json: { errors: 'Stock not found' }, status: 422 and return
       elsif current_user.cart.stocks.find_by_id(stock.id)
         counter += 1
       else
         current_user.cart.stocks << stock
-        render json: current_user.cart.to_json(:include => { :stocks => { :include => :book, :methods => :member }}), status: 200
+        # render json: current_user.cart.stocks.to_json(:include => { :stocks => { :include => :book, :methods => :member } }), status: 200
+        render json: current_user.cart.stocks.find(stock.id).to_json(:include => :book, :methods => :member) and return
       end
     end
     if ( counter == stocks.size )
@@ -102,10 +106,10 @@ class Api::V1::MembersController < ApplicationController
   end
 
   def remove_stock_from_cart
-    temp_stock = Stock.find_by_id(cart_params[:stock_id])
+    temp_stock = Stock.find_by_id(cart_remove_params[:stock_id])
     if temp_stock.nil?
       render json: { errors: 'Stock not found' }, status: 422
-    elsif current_user.cart.stocks.find_by_id(cart_params[:stock_id])
+    elsif current_user.cart.stocks.find_by_id(cart_remove_params[:stock_id])
       current_user.cart.stocks.delete(temp_stock)
       render json: current_user.cart.to_json(:include => { :stocks => { :include => :book, :methods => :member }}), status: 200
     else
@@ -152,6 +156,10 @@ class Api::V1::MembersController < ApplicationController
 
     def cart_params
       params.require(:line_stock).permit(:line_stock_id)
+    end
+
+    def cart_remove_params
+      params.require(:stock).permit(:stock_id)
     end
 
     def eql_attributes?(old_stock, new_stock)

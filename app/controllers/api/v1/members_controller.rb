@@ -83,14 +83,21 @@ class Api::V1::MembersController < ApplicationController
   end
 
   def add_stock_to_cart
-    temp_stock = Stock.find_by_id(cart_params[:stock_id])
-    if temp_stock.nil?
-      render json: { errors: 'Stock not found' }, status: 422
-    elsif current_user.cart.stocks.find_by_id(cart_params[:stock_id])
-      render json: { errors: 'This stock is already in your cart' }, status: 422
-    else
-      current_user.cart.stocks << temp_stock
-      render json: current_user.cart.to_json(:include => :stocks), status: 200
+    line_stock = LineStock.find_by_id(cart_params[:line_stock_id])
+    stocks = line_stock.stocks
+    counter = 0
+    stocks each do |stock|
+      if line_stock.nil?
+        render json: { errors: 'Stock not found' }, status: 422 and return
+      elsif current_user.cart.stocks.find_by_id(stock.id)
+        counter += 1
+      else
+        current_user.cart.stocks << stock
+        render json: current_user.cart.to_json(:include => { :stocks => { :include => :book, :methods => :member }}), status: 200
+      end
+    end
+    if ( counter == stocks.size )
+      render json: { errors: 'All of this stock(s) is already in your cart' }, status: 422
     end
   end
 
@@ -144,7 +151,7 @@ class Api::V1::MembersController < ApplicationController
     end
 
     def cart_params
-      params.require(:stock).permit(:stock_id)
+      params.require(:line_stock).permit(:line_stock_id)
     end
 
     def eql_attributes?(old_stock, new_stock)

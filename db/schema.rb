@@ -62,12 +62,19 @@ ActiveRecord::Schema.define(version: 20151019050851) do
 
   create_table "line_stocks", force: :cascade do |t|
     t.integer  "member_id"
+    t.integer  "book_id"
     t.integer  "quantity"
     t.string   "type"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.float    "price"
+    t.string   "condition"
+    t.string   "duration"
+    t.string   "terms"
+    t.string   "description"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
+  add_index "line_stocks", ["book_id"], name: "index_line_stocks_on_book_id", using: :btree
   add_index "line_stocks", ["member_id"], name: "index_line_stocks_on_member_id", using: :btree
 
   create_table "members", force: :cascade do |t|
@@ -116,6 +123,7 @@ ActiveRecord::Schema.define(version: 20151019050851) do
 
   add_foreign_key "addresses", "members"
   add_foreign_key "carts", "members"
+  add_foreign_key "line_stocks", "books"
   add_foreign_key "line_stocks", "members"
   add_foreign_key "stocks", "books"
   add_foreign_key "stocks", "line_stocks"

@@ -91,14 +91,14 @@ class Api::V1::MembersController < ApplicationController
   def add_stock_to_cart
     line_stock = LineStock.find_by_id(cart_params[:line_stock_id])
     if line_stock.nil?
-        render json: { errors: 'Stock not found' }, status: 422 and return
+      render json: { errors: 'Stock not found' }, status: 422 and return
+    elsif line_stock.member_id == current_user.id
+      render json: { errors: 'You can\'t add your own stock to cart' }, status: 422 and return
     end
     stocks = line_stock.stocks
     counter = 0
     stocks.each do |stock|
-      if line_stock.nil?
-        render json: { errors: 'Stock not found' }, status: 422 and return
-      elsif current_user.cart.stocks.find_by_id(stock.id)
+      if current_user.cart.stocks.find_by_id(stock.id)
         counter += 1
       else
         current_user.cart.stocks << stock

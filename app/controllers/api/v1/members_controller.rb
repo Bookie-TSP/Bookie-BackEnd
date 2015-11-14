@@ -1,5 +1,5 @@
 class Api::V1::MembersController < ApplicationController
-  before_action :authenticate_with_token!, only: [:update, :destroy, :profile_detail, :create_stock, :add_stock_to_cart, :get_stock_in_cart, :edit_address, :get_my_stock]
+  before_action :authenticate_with_token!, only: [:update, :destroy, :profile_detail, :create_stock, :add_stock_to_cart, :get_stock_in_cart, :edit_address, :get_my_stock, :checkout, :get_my_order]
 	respond_to :json
 
   def profile_detail
@@ -137,6 +137,48 @@ class Api::V1::MembersController < ApplicationController
     head 204
   end
 
+  def checkout
+    ActiveRecord::Base.transaction do
+      if current_user.cart.stocks.size == 0
+        render json: { errors: 'Your cart is empty' }, status: 422 and return
+      end
+      my_order = current_user.orders.create
+      my_order.status = 'pending'
+      my_order.side = 'member'
+      my_order.address = current_user.addresses.first
+      my_order.total_price = 0
+      target_stocks = current_user.cart.stocks.group_by(&:member_id)
+      target_stocks.each do |group|
+        supplier_user = Member.find(group[0])
+        supplier_order = supplier_user.orders.create
+        supplier_order.status = 'pending'
+        supplier_order.side = 'supplier'
+        supplier_order.address = current_user.addresses.first
+        supplier_order.total_price = 0
+        group[1].each do |stock|
+          stock.status = 'pending'
+          my_order.stocks << stock
+          my_order.total_price += stock.price
+          supplier_order.stocks << stock
+          supplier_order.total_price += stock.price
+          temp_line_stock = stock.line_stock
+          temp_line_stock.stocks.delete(stock)
+          temp_line_stock.quantity = temp_line_stock.stocks.size
+          temp_line_stock.save
+          stock.clear_cart
+          stock.save
+          my_order.save
+          supplier_order.save
+        end
+      end
+      render json: my_order.to_json(:include => [:stocks, :address]), status: 200
+    end
+  end
+
+  def get_my_order
+    render json: current_user.orders.to_json(:include => [:stocks, :address]), status: 200
+  end
+
   private
 
     def member_params
@@ -163,6 +205,9 @@ class Api::V1::MembersController < ApplicationController
 
     def cart_params
       params.require(:line_stock).permit(:line_stock_id)
+    end
+
+    def checkout_params
     end
 
     def cart_remove_params

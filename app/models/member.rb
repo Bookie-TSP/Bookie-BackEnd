@@ -10,6 +10,7 @@ class Member < ActiveRecord::Base
   has_many :addresses, dependent: :destroy
   has_many :line_stocks, dependent: :destroy
   has_many :stocks, through: :line_stocks
+  has_many :orders
   has_one :cart
   def generate_authentication_token!
     begin

@@ -15,12 +15,14 @@ Rails.application.routes.draw do
       resources :books, :only => [:index, :show, :create]
       get '/myprofile' => 'members#profile_detail'
       get '/mystocks' => 'members#get_my_stock'
+      get '/myorders' => 'members#get_my_order'
       put '/members' => 'members#update'
       post '/members/stocks' => 'members#create_stock'
       post '/members/cart/add' => 'members#add_stock_to_cart'
       post '/members/cart/remove' => 'members#remove_stock_from_cart'
       get '/members/cart/show' => 'members#get_stock_in_cart'
       post '/members/edit_address' => 'members#edit_address'
+      post '/members/cart/checkout' => 'members#checkout'
     end
   end
 end

@@ -142,12 +142,15 @@ class Api::V1::MembersController < ApplicationController
       if current_user.cart.stocks.size == 0
         render json: { errors: 'Your cart is empty' }, status: 422 and return
       end
+      target_stocks = current_user.cart.stocks.group_by(&:member_id)
+      if !target_stocks
+        render json: { errors: 'Something went wrong' }, status: 422 and return
+      end
       my_order = current_user.orders.create
       my_order.status = 'pending'
       my_order.side = 'member'
       my_order.address = current_user.addresses.first
       my_order.total_price = 0
-      target_stocks = current_user.cart.stocks.group_by(&:member_id)
       target_stocks.each do |group|
         supplier_user = Member.find(group[0])
         supplier_order = supplier_user.orders.create
@@ -176,7 +179,7 @@ class Api::V1::MembersController < ApplicationController
   end
 
   def get_my_order
-    render json: current_user.orders.to_json(:include => [:stocks, :address]), status: 200
+    render json: current_user.to_json(:include => { :orders => { :include => [:stocks, :address] }}), status: 200
   end
 
   private

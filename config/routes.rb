@@ -21,6 +21,7 @@ Rails.application.routes.draw do
       post '/members/cart/remove' => 'members#remove_stock_from_cart'
       get '/members/cart/show' => 'members#get_stock_in_cart'
       post '/members/edit_address' => 'members#edit_address'
+      post '/members/stock/quantity' => 'members#change_quantity_of_line_stock'
     end
   end
 end

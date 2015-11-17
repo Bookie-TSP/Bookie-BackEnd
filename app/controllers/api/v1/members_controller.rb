@@ -1,5 +1,5 @@
 class Api::V1::MembersController < ApplicationController
-  before_action :authenticate_with_token!, only: [:update, :destroy, :profile_detail, :create_stock, :add_stock_to_cart, :get_stock_in_cart, :edit_address, :get_my_stock]
+  before_action :authenticate_with_token!, only: [:update, :destroy, :profile_detail, :create_stock, :add_stock_to_cart, :get_stock_in_cart, :edit_address, :get_my_stock, :change_quantity_of_line_stock]
 	respond_to :json
 
   def profile_detail
@@ -129,7 +129,70 @@ class Api::V1::MembersController < ApplicationController
 
   def get_my_stock
     # render json: current_user.to_json(:include => { :line_stocks => { :include => { :stocks => { :include => :book, :methods => :member } } } }), status: 200
-    render json: current_user.to_json(:include => [:addresses, :line_stocks => { :include => [ :book, :stocks => { :methods => :member, :only => :id } ] }]), status: 201, location: [:api, current_user]
+    render json: current_user.to_json(:include => [:addresses, :line_stocks => { :include => [ :book, :stocks => { :methods => :member } ] }]), status: 201, location: [:api, current_user]
+  end
+
+  def change_quantity_of_line_stock
+    line_stock = LineStock.find_by_id(line_stock_params[:line_stock_id])
+    quantity = line_stock_params[:quantity]
+    temp_book = line_stock.book
+    new_stock = Stock.new(
+                          member_id: line_stock.member_id, status: "stock", 
+                          type: line_stock.type, price: line_stock.price, 
+                          condition: line_stock.condition, duration: line_stock.duration,
+                          terms: line_stock.terms,description: line_stock.description)
+    if line_stock.nil?
+        render json: { errors: 'Stock not found' }, status: 422 and return
+    end
+    if quantity == 0
+      line_stock.stocks.destroy_all
+      line_stock.quantity = 0
+      line_stock.save
+      # render json: current_user.to_json(:include => {:stocks => { :include => :book, :methods => :member }}), status: 200 and return
+      render json: current_user.to_json(:include => [:addresses, :line_stocks => { :include => [ :book, :stocks => { :methods => :member, :only => :id } ] }]), status: 201, location: [:api, current_user] and return
+    elsif quantity == line_stock.stocks.size
+      # render json: current_user.to_json(:include => {:stocks => { :include => :book, :methods => :member }}), status: 200 and return
+      render json: current_user.to_json(:include => [:addresses, :line_stocks => { :include => [ :book, :stocks => { :methods => :member, :only => :id } ] }]), status: 201, location: [:api, current_user] and return
+    elsif quantity > line_stock.stocks.size
+      (line_stock.quantity..quantity-1).each do |i|
+        # temp_new_stock = line_stock.stocks.build
+        # temp_new_stock.book_id = new_stock.book_id
+        # temp_new_stock.line_stock_id = new_stock.line_stock_id
+        # temp_new_stock.member_id = new_stock.member_id
+        # temp_new_stock.status = new_stock.status
+        # temp_new_stock.type = new_stock.type
+        # temp_new_stock.price = new_stock.price
+        # temp_new_stock.condition = new_stock.condition
+        # temp_new_stock.duration = new_stock.duration
+        # temp_new_stock.terms = new_stock.terms
+        # temp_new_stock.description = new_stock.description
+        # temp_new_stock.save
+        temp_new_stock = line_stock.stocks.build(new_stock.attributes)
+        temp_new_stock.book = temp_book
+        line_stock.save
+        logger.debug("I = " + i.to_s)
+      end
+      line_stock.save
+      logger.debug("line stock quantity = " + line_stock.stocks.size.to_s)
+    elsif line_stock.stocks.size > quantity
+      number_of_item_to_be_deleted = line_stock.stocks.size - quantity
+      array_of_id = []
+      (1..number_of_item_to_be_deleted).each do |i|
+        array_of_id << line_stock.stocks.last.id
+        line_stock.stocks.last.destroy
+        line_stock.stocks.reload
+      end
+      logger.debug("Array" + array_of_id.to_s)
+        # temp_boolean = line_stock.stocks.first.destroy
+        # logger.debug("line stock quantity = " + line_stock.stocks.size.to_s + " bolean = " + temp_boolean.id.to_s)
+        # line_stock.save
+      # end
+      # line_stock.save
+    end
+    line_stock.quantity = line_stock.stocks.size
+    line_stock.save
+    # render json: current_user.to_json(:include => {:stocks => { :include => :book, :methods => :member }}), status: 200
+    render json: current_user.to_json(:include => [:addresses, :line_stocks => { :include => [ :book, :stocks => { :methods => :member } ] }]), status: 200, location: [:api, current_user]
   end
 
   def destroy
@@ -168,6 +231,11 @@ class Api::V1::MembersController < ApplicationController
     def cart_remove_params
       params.require(:stock).permit(:stock_id)
     end
+
+    def line_stock_params
+      params.require(:line_stock).permit(:line_stock_id, :quantity)
+    end
+
 
     def eql_attributes?(old_stock, new_stock)
       meta = [:id, :created_at, :updated_at, :line_stock_id, :quantity, :status]

@@ -23,6 +23,7 @@ Rails.application.routes.draw do
       get '/members/cart/show' => 'members#get_stock_in_cart'
       post '/members/edit_address' => 'members#edit_address'
       post '/members/cart/checkout' => 'members#checkout'
+      post '/members/stock/quantity' => 'members#change_quantity_of_line_stock'
     end
   end
 end

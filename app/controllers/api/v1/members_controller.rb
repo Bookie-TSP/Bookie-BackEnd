@@ -180,12 +180,12 @@ class Api::V1::MembersController < ApplicationController
   end
 
   def get_my_order
-    render json: current_user.to_json(:include => { :orders => { :include => [:stocks, :address] }}), status: 200
+    render json: current_user.to_json(:include => { :orders => { :include => [:address, :stocks => { :methods => :member , :include => { :book => { :only => :title } } }] } }), status: 200
   end
 
   def get_my_supply_order
     temp_orders = current_user.orders.where(side: 'supplier').all
-    respond_with current_user.as_json.merge({ orders: temp_orders.as_json(:include => [:stocks, :address] )})
+    respond_with current_user.as_json.merge({ orders: temp_orders.as_json(:include => [:address, :stocks => { :methods => :member , :include => { :book => { :only => :title } } }] )})
   end
 
   def change_quantity_of_line_stock

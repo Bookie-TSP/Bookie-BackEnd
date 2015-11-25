@@ -17,9 +17,7 @@ class Api::V1::BooksController < ApplicationController
 		end
 		line_stock_ids = line_stock_ids.uniq
 		line_stocks = LineStock.find(line_stock_ids)
-		# render json: line_stocks.to_json(:include => {:stocks => {:methods => :member}}), status: 200
-		# respond_with Book.find(params[:id]).to_json(:include => {:stocks => {:methods => :member}} )
-		respond_with Book.find(params[:id]).as_json.merge({ line_stocks: line_stocks.as_json(:include => {:stocks => {:methods => :member, :only => :id}})})
+		respond_with Book.find(params[:id]).as_json.merge( { line_stocks: line_stocks.as_json(:include => {:stocks => {:methods => :member, :only => :id}})})
 	end
 
 	def create

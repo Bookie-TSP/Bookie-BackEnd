@@ -4,4 +4,7 @@ class Book < ActiveRecord::Base
   validates :title, :authors, :language, :cover_image_url, presence: true
 	has_many :stocks, :dependent => :destroy
 	has_many :line_stocks, :dependent => :destroy
+
+	include PgSearch
+  pg_search_scope :search_title, :against => [:title]
 end

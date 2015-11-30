@@ -27,6 +27,7 @@ Rails.application.routes.draw do
       post '/members/line_stocks/quantity' => 'members#change_quantity_of_line_stock'
       post '/members/orders/accept' => 'members#accept_stock_in_order'
       post '/members/orders/decline' => 'members#decline_stock_in_order'
+      post '/books/search' => 'books#search'
     end
   end
 end

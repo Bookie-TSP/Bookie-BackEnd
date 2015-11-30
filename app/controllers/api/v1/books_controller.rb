@@ -6,6 +6,11 @@ class Api::V1::BooksController < ApplicationController
 		respond_with Book.all
 	end
 
+	def search
+		books = Book.search_title(params[:search])
+		render json: books, status: 200
+	end
+
 	def show
 		temp_stocks = Stock.where(book_id: params[:id]).all
 		if !temp_stocks

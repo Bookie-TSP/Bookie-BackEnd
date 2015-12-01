@@ -3,7 +3,7 @@ class Api::V1::BooksController < ApplicationController
 	respond_to :json
 
 	def index
-		respond_with Book.all
+		respond_with Book.all.as_json(:methods => :lowest_price)
 	end
 
 	def search

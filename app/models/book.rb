@@ -7,4 +7,9 @@ class Book < ActiveRecord::Base
 
 	include PgSearch
   pg_search_scope :search_title, :against => [:title]
+
+  def lowest_price
+  	price = self.stocks.minimum(:price)
+  	price.to_json
+	end
 end

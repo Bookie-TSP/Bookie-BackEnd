@@ -338,6 +338,9 @@ class Api::V1::MembersController < ApplicationController
         stock_temp = line_stock_being_operated.stocks.build(params.except(:quantity))
         stock_temp.member_id = current_user.id
         stock_temp.book = book
+        if !stock_temp.save
+          render json: { errors: stock_temp.errors }, status: 422 and return
+        end
       end
       line_stock_being_operated.quantity = line_stock_being_operated.stocks.size
       if line_stock_being_operated.save

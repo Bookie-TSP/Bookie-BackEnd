@@ -7,8 +7,22 @@ class Api::V1::BooksController < ApplicationController
 	end
 
 	def search
-		books = Book.search_title(params[:search])
-		render json: books, status: 200
+		if !search_params[:title].nil?
+		books = Book.search_title(search_params[:title])
+		elsif !search_params[:ISBN].nil?
+			if search_params[:ISBN].length == 10
+				books = Book.search_ISBN10(search_params[:ISBN])
+			elsif search_params[:ISBN].length == 13
+				books = Book.search_ISBN13(search_params[:ISBN])
+			else
+				render json: { errors: 'invalid ISBN' }, status: 422
+			end
+		elsif !search_params[:publisher].nil?
+			books = Book.search_publisher(search_params[:publisher])
+		elsif !search_params[:author].nil?
+			books = Book.search_author(search_params[:author])
+		end
+		render json: books.as_json(:methods => :lowest_price), status: 200
 	end
 
 	def show
@@ -38,5 +52,9 @@ class Api::V1::BooksController < ApplicationController
 
 	  def book_params
       params.require(:book).permit(:title, :ISBN10, :ISBN13, :description, :publish_date, :cover_image_url, :language, :pages, :publisher, :authors => [])
+    end
+
+    def search_params
+    	params.require(:book).permit(:title, :ISBN, :publisher, :author)
     end
 end

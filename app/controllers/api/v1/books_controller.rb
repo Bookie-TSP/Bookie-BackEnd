@@ -3,7 +3,7 @@ class Api::V1::BooksController < ApplicationController
 	respond_to :json
 
 	def index
-		respond_with Book.all
+		respond_with Book.all.as_json(:methods => :lowest_price)
 	end
 
 	def search
@@ -22,7 +22,7 @@ class Api::V1::BooksController < ApplicationController
 		elsif !search_params[:author].nil?
 			books = Book.search_author(search_params[:author])
 		end
-		render json: books, status: 200
+		render json: books.as_json(:methods => :lowest_price), status: 200
 	end
 
 	def show

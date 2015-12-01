@@ -2,7 +2,7 @@ class Api::V1::MembersController < ApplicationController
   before_action :authenticate_with_token!, only: [:update, :destroy, :profile_detail, :create_stock, :add_stock_to_cart, 
                                                   :get_stock_in_cart, :edit_address, :get_my_stock, :checkout,
                                                   :get_my_order, :change_quantity_of_line_stock, :accept_stock_in_order,
-                                                  :decline_stock_in_order, :get_my_supply_order]
+                                                  :decline_stock_in_order, :change_stock_status_delivering, :change_stock_status_delivered, :change_stock_status_returning, :change_stock_status_returned, :get_my_supply_order]
 	respond_to :json
 
   def profile_detail
@@ -148,12 +148,16 @@ class Api::V1::MembersController < ApplicationController
         render json: { errors: 'Something went wrong' }, status: 422 and return
       end
       temp_payment = Payment.new(checkout_params)
+      if !temp_payment.save
+        render json: { errors: temp_payment.errors }, status: 422 and return
+      end
       my_order = current_user.orders.create
       my_order.status = 'pending'
       my_order.side = 'member'
       my_order.address = current_user.addresses.first
       my_order.total_price = 0
       my_order.payment = temp_payment
+      temp_payment.order = my_order
       target_stocks.each do |group|
         supplier_user = Member.find(group[0])
         supplier_order = supplier_user.orders.create
@@ -248,6 +252,10 @@ class Api::V1::MembersController < ApplicationController
     end
     if member_stock.status == 'pending'
       member_stock.status = 'accepted'
+      member_stock.orders.each do |temp_order|
+        temp_order.status = 'active'
+        temp_order.save
+      end
       member_stock.save
       member_order.save
       render json: member_order.to_json(:include => [:stocks, :address]), status: 200 and return
@@ -270,11 +278,111 @@ class Api::V1::MembersController < ApplicationController
     end
     if member_stock.status == 'pending'
       member_stock.status = 'declined'
+      member_stock.orders.each do |temp_order|
+        if temp_order.stocks.count(:conditions => [ 'status = ? or status = ?', 'declined', 'returned']) == temp_order.stocks.size
+          temp_order.status = 'ended'
+          temp_order.save
+        end
+      end
       member_stock.save
       member_order.save
       render json: member_order.to_json(:include => [:stocks, :address]), status: 200 and return
     elsif 
       render json: { errors: 'This stock is not in pending state' }, status: 422 and return
+    end
+  end
+
+  def change_stock_status_delivering
+    member_order = current_user.orders.find_by_id(accept_and_decline_order_params[:order_id])
+    if !member_order
+      render json: { errors: 'Order not found' }, status: 422 and return
+    end
+    if member_order.side != 'supplier'
+      render json: { errors: 'Can\'t change your own order to delivering status' }, status: 422 and return
+    end
+    member_stock = member_order.stocks.find_by_id(accept_and_decline_order_params[:stock_id])
+    if !member_stock
+      render json: { errors: 'Stock not found' }, status: 422 and return
+    end
+    if member_stock.status == 'accepted'
+      member_stock.status = 'delivering'
+      member_stock.save
+      member_order.save
+      render json: member_order.to_json(:include => [:stocks, :address]), status: 200 and return
+    elsif 
+      render json: { errors: 'This stock is not in accepted state' }, status: 422 and return
+    end
+  end
+
+  def change_stock_status_delivered
+    member_order = current_user.orders.find_by_id(accept_and_decline_order_params[:order_id])
+    if !member_order
+      render json: { errors: 'Order not found' }, status: 422 and return
+    end
+    if member_order.side != 'supplier'
+      render json: { errors: 'Can\'t change your own order to delivered status' }, status: 422 and return
+    end
+    member_stock = member_order.stocks.find_by_id(accept_and_decline_order_params[:stock_id])
+    if !member_stock
+      render json: { errors: 'Stock not found' }, status: 422 and return
+    end
+    if member_stock.status == 'delivering'
+      member_stock.status = 'delivered'
+      member_stock.save
+      member_order.save
+      render json: member_order.to_json(:include => [:stocks, :address]), status: 200 and return
+    elsif 
+      render json: { errors: 'This stock is not in delivering state' }, status: 422 and return
+    end
+  end
+
+  def change_stock_status_returning
+    member_order = current_user.orders.find_by_id(accept_and_decline_order_params[:order_id])
+    if !member_order
+      render json: { errors: 'Order not found' }, status: 422 and return
+    end
+    if member_order.side != 'supplier'
+      render json: { errors: 'Can\'t change your own order to returning status' }, status: 422 and return
+    end
+    member_stock = member_order.stocks.find_by_id(accept_and_decline_order_params[:stock_id])
+    if !member_stock
+      render json: { errors: 'Stock not found' }, status: 422 and return
+    end
+    if member_stock.status == 'delivered'
+      member_stock.status = 'returning'
+      member_stock.save
+      member_order.save
+      render json: member_order.to_json(:include => [:stocks, :address]), status: 200 and return
+    elsif 
+      render json: { errors: 'This stock is not in delivered state' }, status: 422 and return
+    end
+  end
+
+  def change_stock_status_returned
+    member_order = current_user.orders.find_by_id(accept_and_decline_order_params[:order_id])
+    if !member_order
+      render json: { errors: 'Order not found' }, status: 422 and return
+    end
+    if member_order.side != 'supplier'
+      render json: { errors: 'Can\'t change your own order to returned status' }, status: 422 and return
+    end
+    member_stock = member_order.stocks.find_by_id(accept_and_decline_order_params[:stock_id])
+    if !member_stock
+      render json: { errors: 'Stock not found' }, status: 422 and return
+    end
+    if member_stock.status == 'returning'
+      member_stock.status = 'returned'
+      member_stock.orders.each do |temp_order|
+        if temp_order.stocks.count(:conditions => [ 'status = ? or status = ?', 'declined', 'returned']) == temp_order.stocks.size
+          temp_order.status = 'ended'
+          temp_order.save
+        end
+      end
+      member_stock.save
+      member_order.save
+      render json: member_order.to_json(:include => [:stocks, :address]), status: 200 and return
+    elsif 
+      render json: { errors: 'This stock is not in returning state' }, status: 422 and return
     end
   end
 
@@ -338,6 +446,9 @@ class Api::V1::MembersController < ApplicationController
         stock_temp = line_stock_being_operated.stocks.build(params.except(:quantity))
         stock_temp.member_id = current_user.id
         stock_temp.book = book
+        if !stock_temp.save
+          render json: { errors: stock_temp.errors }, status: 422 and return
+        end
       end
       line_stock_being_operated.quantity = line_stock_being_operated.stocks.size
       if line_stock_being_operated.save

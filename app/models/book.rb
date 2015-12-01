@@ -11,4 +11,9 @@ class Book < ActiveRecord::Base
   pg_search_scope :search_ISBN13, :against => [:ISBN13]
   pg_search_scope :search_publisher, :against => [:publisher]
   pg_search_scope :search_author, :against => [:authors]
+
+  def lowest_price
+  	price = self.stocks.minimum(:price)
+  	price.to_json
+	end
 end

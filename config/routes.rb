@@ -27,6 +27,10 @@ Rails.application.routes.draw do
       post '/members/line_stocks/quantity' => 'members#change_quantity_of_line_stock'
       post '/members/orders/accept' => 'members#accept_stock_in_order'
       post '/members/orders/decline' => 'members#decline_stock_in_order'
+      post '/members/orders/delivering' => 'members#change_stock_status_delivering'
+      post '/members/orders/delivered' => 'members#change_stock_status_delivered'
+      post '/members/orders/returning' => 'members#change_stock_status_returning'
+      post '/members/orders/returned' => 'members#change_stock_status_returned'
       post '/books/search' => 'books#search'
     end
   end

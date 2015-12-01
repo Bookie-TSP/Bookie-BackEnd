@@ -1,5 +1,8 @@
 class Api::V1::MembersController < ApplicationController
-  before_action :authenticate_with_token!, only: [:update, :destroy, :profile_detail, :create_stock, :add_stock_to_cart, :get_stock_in_cart, :edit_address, :get_my_stock, :checkout, :get_my_order, :change_quantity_of_line_stock]
+  before_action :authenticate_with_token!, only: [:update, :destroy, :profile_detail, :create_stock, :add_stock_to_cart, 
+                                                  :get_stock_in_cart, :edit_address, :get_my_stock, :checkout,
+                                                  :get_my_order, :change_quantity_of_line_stock, :accept_stock_in_order,
+                                                  :decline_stock_in_order, :get_my_supply_order]
 	respond_to :json
 
   def profile_detail
@@ -102,7 +105,6 @@ class Api::V1::MembersController < ApplicationController
         counter += 1
       else
         current_user.cart.stocks << stock
-        # render json: current_user.cart.stocks.to_json(:include => { :stocks => { :include => :book, :methods => :member } }), status: 200
         render json: current_user.cart.stocks.find(stock.id).to_json(:include => :book, :methods => :member) and return
       end
     end
@@ -128,7 +130,6 @@ class Api::V1::MembersController < ApplicationController
   end
 
   def get_my_stock
-    # render json: current_user.to_json(:include => { :line_stocks => { :include => { :stocks => { :include => :book, :methods => :member } } } }), status: 200
     render json: current_user.to_json(:include => [:addresses, :line_stocks => { :include => [ :book, :stocks => { :methods => :member, :only => :id } ] }]), status: 201, location: [:api, current_user]
   end
 
@@ -182,11 +183,19 @@ class Api::V1::MembersController < ApplicationController
   end
 
   def get_my_order
-    render json: current_user.to_json(:include => { :orders => { :include => [:stocks, :address] }}), status: 200
+    render json: current_user.to_json(:include => { :orders => { :include => [:address, :stocks => { :methods => :member , :include => { :book => { :only => :title } } }] } }), status: 200
+  end
+
+  def get_my_supply_order
+    temp_orders = current_user.orders.where(side: 'supplier').all
+    respond_with current_user.as_json.merge({ orders: temp_orders.as_json(:include => [:address, :stocks => { :methods => :member , :include => { :book => { :only => :title } } }] )})
   end
 
   def change_quantity_of_line_stock
     line_stock = LineStock.find_by_id(line_stock_params[:line_stock_id])
+    if line_stock.nil?
+        render json: { errors: 'Line stock not found' }, status: 422 and return
+    end
     quantity = line_stock_params[:quantity]
     temp_book = line_stock.book
     new_stock = Stock.new(
@@ -194,32 +203,15 @@ class Api::V1::MembersController < ApplicationController
                           type: line_stock.type, price: line_stock.price, 
                           condition: line_stock.condition, duration: line_stock.duration,
                           terms: line_stock.terms,description: line_stock.description)
-    if line_stock.nil?
-        render json: { errors: 'Stock not found' }, status: 422 and return
-    end
     if quantity == 0
       line_stock.stocks.destroy_all
       line_stock.quantity = 0
       line_stock.save
-      # render json: current_user.to_json(:include => {:stocks => { :include => :book, :methods => :member }}), status: 200 and return
       render json: current_user.to_json(:include => [:addresses, :line_stocks => { :include => [ :book, :stocks => { :methods => :member, :only => :id } ] }]), status: 201, location: [:api, current_user] and return
     elsif quantity == line_stock.stocks.size
-      # render json: current_user.to_json(:include => {:stocks => { :include => :book, :methods => :member }}), status: 200 and return
       render json: current_user.to_json(:include => [:addresses, :line_stocks => { :include => [ :book, :stocks => { :methods => :member, :only => :id } ] }]), status: 201, location: [:api, current_user] and return
     elsif quantity > line_stock.stocks.size
       (line_stock.quantity..quantity-1).each do |i|
-        # temp_new_stock = line_stock.stocks.build
-        # temp_new_stock.book_id = new_stock.book_id
-        # temp_new_stock.line_stock_id = new_stock.line_stock_id
-        # temp_new_stock.member_id = new_stock.member_id
-        # temp_new_stock.status = new_stock.status
-        # temp_new_stock.type = new_stock.type
-        # temp_new_stock.price = new_stock.price
-        # temp_new_stock.condition = new_stock.condition
-        # temp_new_stock.duration = new_stock.duration
-        # temp_new_stock.terms = new_stock.terms
-        # temp_new_stock.description = new_stock.description
-        # temp_new_stock.save
         temp_new_stock = line_stock.stocks.build(new_stock.attributes)
         temp_new_stock.book = temp_book
         line_stock.save
@@ -236,16 +228,54 @@ class Api::V1::MembersController < ApplicationController
         line_stock.stocks.reload
       end
       logger.debug("Array" + array_of_id.to_s)
-        # temp_boolean = line_stock.stocks.first.destroy
-        # logger.debug("line stock quantity = " + line_stock.stocks.size.to_s + " bolean = " + temp_boolean.id.to_s)
-        # line_stock.save
-      # end
-      # line_stock.save
     end
     line_stock.quantity = line_stock.stocks.size
     line_stock.save
-    # render json: current_user.to_json(:include => {:stocks => { :include => :book, :methods => :member }}), status: 200
     render json: current_user.to_json(:include => [:addresses, :line_stocks => { :include => [ :book, :stocks => { :methods => :member } ] }]), status: 200, location: [:api, current_user]
+  end
+
+  def accept_stock_in_order
+    member_order = current_user.orders.find_by_id(accept_and_decline_order_params[:order_id])
+    if !member_order
+      render json: { errors: 'Order not found' }, status: 422 and return
+    end
+    if member_order.side != 'supplier'
+      render json: { errors: 'Can\'t accept your own order' }, status: 422 and return
+    end
+    member_stock = member_order.stocks.find_by_id(accept_and_decline_order_params[:stock_id])
+    if !member_stock
+      render json: { errors: 'Stock not found' }, status: 422 and return
+    end
+    if member_stock.status == 'pending'
+      member_stock.status = 'accepted'
+      member_stock.save
+      member_order.save
+      render json: member_order.to_json(:include => [:stocks, :address]), status: 200 and return
+    elsif 
+      render json: { errors: 'This stock is not in pending state' }, status: 422 and return
+    end
+  end
+
+  def decline_stock_in_order
+    member_order = current_user.orders.find_by_id(accept_and_decline_order_params[:order_id])
+    if !member_order
+      render json: { errors: 'Order not found' }, status: 422 and return
+    end
+    if member_order.side != 'supplier'
+      render json: { errors: 'Can\'t decline your own order' }, status: 422 and return
+    end
+    member_stock = member_order.stocks.find_by_id(accept_and_decline_order_params[:stock_id])
+    if !member_stock
+      render json: { errors: 'Stock not found' }, status: 422 and return
+    end
+    if member_stock.status == 'pending'
+      member_stock.status = 'declined'
+      member_stock.save
+      member_order.save
+      render json: member_order.to_json(:include => [:stocks, :address]), status: 200 and return
+    elsif 
+      render json: { errors: 'This stock is not in pending state' }, status: 422 and return
+    end
   end
 
   private
@@ -282,6 +312,10 @@ class Api::V1::MembersController < ApplicationController
 
     def checkout_params
       params.require(:payment).permit(:billing_name, :billing_type, :billing_card_number, :billing_card_expire_date, :billing_card_security_number)
+    end
+
+    def accept_and_decline_order_params
+      params.require(:order).permit(:order_id, :stock_id)
     end
 
     def cart_remove_params

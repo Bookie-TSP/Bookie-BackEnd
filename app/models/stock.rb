@@ -8,7 +8,7 @@ class Stock < ActiveRecord::Base
 
   def member
   	temp_member = Member.find_by_id(self.member_id)
-  	temp_member.as_json(:include => :addresses)
+  	temp_member.as_json(:include => :addresses, :except => :auth_token)
 	end
 
   def clear_cart

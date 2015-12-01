@@ -18,6 +18,8 @@ gem 'jquery-rails'
 # Postgresql
 gem 'pg'
 
+gem 'pg_search'
+
 # Logging and assets in heroku
 gem 'rails_12factor', group: :production
 

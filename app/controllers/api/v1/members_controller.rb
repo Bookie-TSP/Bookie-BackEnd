@@ -147,11 +147,13 @@ class Api::V1::MembersController < ApplicationController
       if !target_stocks
         render json: { errors: 'Something went wrong' }, status: 422 and return
       end
+      temp_payment = Payment.new(checkout_params)
       my_order = current_user.orders.create
       my_order.status = 'pending'
       my_order.side = 'member'
       my_order.address = current_user.addresses.first
       my_order.total_price = 0
+      my_order.payment = temp_payment
       target_stocks.each do |group|
         supplier_user = Member.find(group[0])
         supplier_order = supplier_user.orders.create
@@ -159,6 +161,7 @@ class Api::V1::MembersController < ApplicationController
         supplier_order.side = 'supplier'
         supplier_order.address = current_user.addresses.first
         supplier_order.total_price = 0
+        supplier_order.payment = temp_payment
         group[1].each do |stock|
           stock.status = 'pending'
           my_order.stocks << stock
@@ -175,7 +178,7 @@ class Api::V1::MembersController < ApplicationController
           supplier_order.save
         end
       end
-      render json: my_order.to_json(:include => [:stocks, :address]), status: 200
+      render json: my_order.to_json(:include => [:stocks, :address, :payment]), status: 200
     end
   end
 
@@ -308,6 +311,7 @@ class Api::V1::MembersController < ApplicationController
     end
 
     def checkout_params
+      params.require(:payment).permit(:billing_name, :billing_type, :billing_card_number, :billing_card_expire_date, :billing_card_security_number)
     end
 
     def accept_and_decline_order_params

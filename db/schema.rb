@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151114050851) do
+ActiveRecord::Schema.define(version: 20151118091526) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -124,6 +124,19 @@ ActiveRecord::Schema.define(version: 20151114050851) do
   add_index "orders_stocks", ["order_id", "stock_id"], name: "index_orders_stocks_on_order_id_and_stock_id", using: :btree
   add_index "orders_stocks", ["stock_id", "order_id"], name: "index_orders_stocks_on_stock_id_and_order_id", using: :btree
 
+  create_table "payments", force: :cascade do |t|
+    t.integer  "order_id"
+    t.string   "billing_name"
+    t.string   "billing_type"
+    t.string   "billing_card_number"
+    t.string   "billing_card_expire_date"
+    t.integer  "billing_card_security_number"
+    t.datetime "created_at",                   null: false
+    t.datetime "updated_at",                   null: false
+  end
+
+  add_index "payments", ["order_id"], name: "index_payments_on_order_id", using: :btree
+
   create_table "stocks", force: :cascade do |t|
     t.integer  "book_id"
     t.integer  "line_stock_id"
@@ -148,6 +161,7 @@ ActiveRecord::Schema.define(version: 20151114050851) do
   add_foreign_key "line_stocks", "members"
   add_foreign_key "orders", "addresses"
   add_foreign_key "orders", "members"
+  add_foreign_key "payments", "orders"
   add_foreign_key "stocks", "books"
   add_foreign_key "stocks", "line_stocks"
 end

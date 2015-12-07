@@ -221,10 +221,10 @@ class Api::V1::MembersController < ApplicationController
         temp_new_stock = line_stock.stocks.build(new_stock.attributes)
         temp_new_stock.book = temp_book
         line_stock.save
-        logger.debug("I = " + i.to_s)
+        # logger.debug("I = " + i.to_s)
       end
       line_stock.save
-      logger.debug("line stock quantity = " + line_stock.stocks.size.to_s)
+      # logger.debug("line stock quantity = " + line_stock.stocks.size.to_s)
     elsif line_stock.stocks.size > quantity
       number_of_item_to_be_deleted = line_stock.stocks.size - quantity
       array_of_id = []
@@ -233,7 +233,7 @@ class Api::V1::MembersController < ApplicationController
         line_stock.stocks.last.destroy
         line_stock.stocks.reload
       end
-      #logger.debug("Array" + array_of_id.to_s)
+      # logger.debug("Array" + array_of_id.to_s)
     end
     line_stock.quantity = line_stock.stocks.size
     line_stock.save
@@ -261,7 +261,7 @@ class Api::V1::MembersController < ApplicationController
       member_stock.save
       member_order.save
       render json: member_order.to_json(:include => [:stocks, :address]), status: 200 and return
-    elsif 
+    elsif
       render json: { errors: 'This stock is not in pending state' }, status: 422 and return
     end
   end
@@ -436,9 +436,9 @@ class Api::V1::MembersController < ApplicationController
       meta = [:id, :created_at, :updated_at, :line_stock_id, :quantity, :status]
       old_stock = old_stock.attributes.symbolize_keys.except(*meta)
       new_stock = new_stock.attributes.symbolize_keys.except(*meta)
-      logger.debug("Old =  " + old_stock.to_s)
-      logger.debug("New = " + new_stock.to_s)
-      logger.debug("Equals ? " + (old_stock == new_stock).to_s)
+      # logger.debug("Old =  " + old_stock.to_s)
+      # logger.debug("New = " + new_stock.to_s)
+      # logger.debug("Equals ? " + (old_stock == new_stock).to_s)
       old_stock == new_stock
     end
 

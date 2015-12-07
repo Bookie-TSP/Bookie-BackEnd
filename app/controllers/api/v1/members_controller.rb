@@ -199,6 +199,8 @@ class Api::V1::MembersController < ApplicationController
     line_stock = LineStock.find_by_id(line_stock_params[:line_stock_id])
     if line_stock.nil?
         render json: { errors: 'Line stock not found' }, status: 422 and return
+    elsif line_stock_params[:quantity] < 0
+      render json: { errors: 'quantity of stock can\'t be negative' }, status: 422 and return
     end
     quantity = line_stock_params[:quantity]
     temp_book = line_stock.book
@@ -231,7 +233,7 @@ class Api::V1::MembersController < ApplicationController
         line_stock.stocks.last.destroy
         line_stock.stocks.reload
       end
-      logger.debug("Array" + array_of_id.to_s)
+      #logger.debug("Array" + array_of_id.to_s)
     end
     line_stock.quantity = line_stock.stocks.size
     line_stock.save

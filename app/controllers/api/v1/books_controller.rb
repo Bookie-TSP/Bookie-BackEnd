@@ -22,7 +22,11 @@ class Api::V1::BooksController < ApplicationController
 		elsif !search_params[:author].nil?
 			books = Book.search_author(search_params[:author])
 		end
-		render json: books.as_json(:methods => :lowest_price), status: 200
+		if !books==[]
+			render json: books.as_json(:methods => :lowest_price), status: 200
+		else
+			render json: { errors: 'book not found' }, status: 422
+		end
 	end
 
 	def show

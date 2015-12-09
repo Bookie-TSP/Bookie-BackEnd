@@ -280,7 +280,7 @@ class Api::V1::MembersController < ApplicationController
     if member_stock.status == 'pending'
       member_stock.status = 'declined'
       member_stock.orders.each do |temp_order|
-        if temp_order.stocks.count(:conditions => [ 'status = ? or status = ?', 'declined', 'returned']) == temp_order.stocks.size
+        if temp_order.stocks.count(:conditions => [ 'status = ? or status = ?', 'declined', 'done']) == temp_order.stocks.size
           temp_order.status = 'ended'
           temp_order.save
         end
@@ -329,6 +329,9 @@ class Api::V1::MembersController < ApplicationController
     end
     if member_stock.status == 'delivering'
       member_stock.status = 'delivered'
+      if member_stock.type == 'sell'
+        member_stock.status = 'done'
+      end
       member_stock.save
       member_order.save
       render json: member_order.to_json(:include => [:stocks, :address]), status: 200 and return
@@ -371,10 +374,10 @@ class Api::V1::MembersController < ApplicationController
     if !member_stock
       render json: { errors: 'Stock not found' }, status: 422 and return
     end
-    if member_stock.status == 'returning'
-      member_stock.status = 'returned'
+    if member_stock.status == 'returning' || member_stock.status == 'declined'
+      member_stock.status = 'done'
       member_stock.orders.each do |temp_order|
-        if temp_order.stocks.count(:conditions => [ 'status = ? or status = ?', 'declined', 'returned']) == temp_order.stocks.size
+        if temp_order.stocks.count(:conditions => [ 'status = ? or status = ?', 'declined', 'done']) == temp_order.stocks.size
           temp_order.status = 'ended'
           temp_order.save
         end

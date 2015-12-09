@@ -35,7 +35,7 @@ class Api::V1::BooksController < ApplicationController
 			line_stock_ids << stock.line_stock_id
 		end
 		line_stock_ids = line_stock_ids.uniq
-		line_stocks = LineStock.find(line_stock_ids)
+		line_stocks = LineStock.find_by_id(line_stock_ids)
 		respond_with Book.find(params[:id]).as_json.merge( { line_stocks: line_stocks.as_json(:include => {:stocks => {:methods => :member, :only => :id}})})
 	end
 

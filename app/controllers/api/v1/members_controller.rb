@@ -158,6 +158,7 @@ class Api::V1::MembersController < ApplicationController
       my_order.total_price = 0
       my_order.payment = temp_payment
       temp_payment.order = my_order
+      temp_payment.save
       target_stocks.each do |group|
         supplier_user = Member.find(group[0])
         supplier_order = supplier_user.orders.create

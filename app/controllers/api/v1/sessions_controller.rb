@@ -4,6 +4,10 @@ class Api::V1::SessionsController < ApplicationController
     member_email = params[:session][:email]
     member = member_email.present? && Member.find_by(email: member_email)
 
+    if !member
+      render json: { errors: "Email not found" }, status: 200, location: [:api, member]
+    end
+
     if member.valid_password? member_password
       sign_in member, store: false
       member.generate_authentication_token!

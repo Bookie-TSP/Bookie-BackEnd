@@ -5,7 +5,7 @@ class Api::V1::SessionsController < ApplicationController
     member = member_email.present? && Member.find_by(email: member_email)
 
     if !member
-      render json: { errors: "Email not found" }, status: 200, location: [:api, member]
+      render json: { errors: "Email not found" }, status: 422 and return
     end
 
     if member.valid_password? member_password

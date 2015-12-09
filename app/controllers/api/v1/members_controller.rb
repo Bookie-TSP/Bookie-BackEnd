@@ -147,8 +147,7 @@ class Api::V1::MembersController < ApplicationController
       if !target_stocks
         render json: { errors: 'Something went wrong' }, status: 422 and return
       end
-      temp_date_string = checkout_params[:billing_card_expire_date].split('/')
-      temp_date = Date.new(temp_date_string[0], temp_date_string[1])
+      temp_date = Date.strptime('30/'+checkout_params[:billing_card_expire_date], "%d/%m/%y")
       if !temp_date
         render json: { errors: 'Invalid expire date' }, status: 422 and return
       end

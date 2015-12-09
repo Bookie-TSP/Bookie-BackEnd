@@ -35,7 +35,7 @@ class Api::V1::BooksController < ApplicationController
 			line_stock_ids << stock.line_stock_id
 		end
 		line_stock_ids = line_stock_ids.uniq
-		line_stocks = LineStock.find_by_id(line_stock_ids)
+		line_stocks = LineStock.where(id: line_stock_ids)
 		if !line_stocks
 			line_stocks = []
 		end

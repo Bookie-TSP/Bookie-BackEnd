@@ -15,7 +15,7 @@ class Api::V1::BooksController < ApplicationController
 			elsif search_params[:ISBN].length == 13
 				books = Book.search_ISBN13(search_params[:ISBN])
 			else
-				render json: { errors: 'invalid ISBN' }, status: 422
+				render json: { errors: 'Invalid ISBN' }, status: 422
 			end
 		elsif !search_params[:publisher].nil?
 			books = Book.search_publisher(search_params[:publisher])

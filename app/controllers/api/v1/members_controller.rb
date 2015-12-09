@@ -149,6 +149,9 @@ class Api::V1::MembersController < ApplicationController
       end
       temp_date_string = checkout_params[:billing_card_expire_date].split('/')
       temp_date = Date.new(temp_date_string[0], temp_date_string[1])
+      if !temp_date
+        render json: { errors: 'Invalid expire date' }, status: 422 and return
+      end
       if temp_date.past?
         render json: { errors: 'Credit card was expired' }, status: 422 and return
       end

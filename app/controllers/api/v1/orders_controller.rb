@@ -34,7 +34,7 @@ class Api::V1::OrdersController < ApplicationController
       member_stock.save
       member_order.save
       render json: member_order.to_json(:include => [:stocks, :address]), status: 200 and return
-    elsif 
+    else
       render json: { errors: 'This stock is not in pending state' }, status: 422 and return
     end
   end
@@ -62,7 +62,7 @@ class Api::V1::OrdersController < ApplicationController
       member_stock.save
       member_order.save
       render json: member_order.to_json(:include => [:stocks, :address]), status: 200 and return
-    elsif 
+    else
       render json: { errors: 'This stock is not in pending state' }, status: 422 and return
     end
   end
@@ -84,7 +84,7 @@ class Api::V1::OrdersController < ApplicationController
       member_stock.save
       member_order.save
       render json: member_order.to_json(:include => [:stocks, :address]), status: 200 and return
-    elsif 
+    else
       render json: { errors: 'This stock is not in accepted state' }, status: 422 and return
     end
   end
@@ -109,7 +109,7 @@ class Api::V1::OrdersController < ApplicationController
       member_stock.save
       member_order.save
       render json: member_order.to_json(:include => [:stocks, :address]), status: 200 and return
-    elsif 
+    else
       render json: { errors: 'This stock is not in delivering state' }, status: 422 and return
     end
   end
@@ -131,7 +131,7 @@ class Api::V1::OrdersController < ApplicationController
       member_stock.save
       member_order.save
       render json: member_order.to_json(:include => [:stocks, :address]), status: 200 and return
-    elsif 
+    else
       render json: { errors: 'This stock is not in delivered state' }, status: 422 and return
     end
   end
@@ -159,7 +159,7 @@ class Api::V1::OrdersController < ApplicationController
       member_stock.save
       member_order.save
       render json: member_order.to_json(:include => [:stocks, :address]), status: 200 and return
-    elsif 
+    else
       render json: { errors: 'This stock is not in returning state' }, status: 422 and return
     end
   end

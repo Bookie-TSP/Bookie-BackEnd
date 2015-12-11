@@ -20,6 +20,7 @@ class Api::V1::MembersController < ApplicationController
           render json: member.to_json(:include => :addresses), status: 201, location: [:api, member]
         else
           render json: { errors: address_temp.errors }, status: 422
+          raise ActiveRecord::Rollback
         end
       else
         render json: { errors: member.errors }, status: 422

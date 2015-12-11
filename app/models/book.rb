@@ -13,7 +13,7 @@ class Book < ActiveRecord::Base
   pg_search_scope :search_author, :against => [:authors]
 
   def lowest_price
-  	price = self.stocks.minimum(:price)
+  	price = self.stocks.where.not(:line_stock_id => nil).minimum(:price)
   	price.to_json
 	end
 end

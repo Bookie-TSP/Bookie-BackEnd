@@ -50,7 +50,11 @@ class Api::V1::CartsController < ApplicationController
         render json: { errors: 'Something went wrong' }, status: 422 and return
       end
       begin
-        temp_date = Date.strptime('30/'+checkout_params[:billing_card_expire_date], "%d/%m/%y")
+        temp_expire = checkout_params[:billing_card_expire_date]
+        if temp_expire[0] == '0'
+          temp_expire = temp_expire[1..temp_expire.size]
+        end
+        temp_date = Date.strptime('30/'+temp_expire, "%d/%m/%y")
         if !temp_date
           render json: { errors: 'Invalid expire date' }, status: 422 and return
         end

@@ -52,7 +52,9 @@ class Api::V1::CartsController < ApplicationController
       begin
         temp_expire = checkout_params[:billing_card_expire_date]
         if temp_expire[0] == '0'
+          logger.debug('0 Found')
           temp_expire = temp_expire[1..temp_expire.size]
+          logger.debug('new expire = ' + temp_expire.to_s)
         end
         temp_date = Date.strptime('30/'+temp_expire, "%d/%m/%y")
         if !temp_date

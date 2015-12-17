@@ -106,6 +106,12 @@ class Api::V1::OrdersController < ApplicationController
       if member_stock.type == 'sell'
         member_stock.status = 'done'
       end
+      member_stock.orders.each do |temp_order|
+        if temp_order.stocks.count(:conditions => [ 'status = ? or status = ?', 'declined', 'done']) == temp_order.stocks.size
+          temp_order.status = 'ended'
+          temp_order.save
+        end
+      end
       member_stock.save
       member_order.save
       render json: member_order.to_json(:include => [:stocks, :address]), status: 200 and return

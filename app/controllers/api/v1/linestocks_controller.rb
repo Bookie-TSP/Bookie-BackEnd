@@ -7,6 +7,9 @@ class Api::V1::LinestocksController < ApplicationController
     if line_stock.nil?
         render json: { errors: 'Line stock not found' }, status: 422 and return
     end
+    if quantity < 0
+      render json: { errors: 'Quantity must greater or equal to zero' }, status: 422 and return
+    end
     quantity = line_stock_params[:quantity]
     temp_book = line_stock.book
     new_stock = Stock.new(

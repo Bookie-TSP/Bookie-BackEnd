@@ -33,10 +33,10 @@ class Api::V1::MembersController < ApplicationController
     member_password = member_update_params[:password]
     if member.valid_password? member_password
       if member.update(member_params)
-        member.addresses.first.first_name = member.first_name
-        member.addresses.first.last_name = member.last_name
-        member.addresses.first.save
-        member.save
+        temp_address = member.addresses.first
+        temp_address.first_name = member.first_name
+        temp_address.last_name = member.last_name
+        temp_address.save
         render json:  member.to_json(:except => :auth_token), status: 200, location: [:api, member]
       else
         render json: { errors: member.errors }, status: 422

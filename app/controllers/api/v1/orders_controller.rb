@@ -1,7 +1,6 @@
 class Api::V1::OrdersController < ApplicationController
 	before_action :authenticate_with_token!, only: [:get_my_order, :get_my_supply_order, :accept_stock_in_order, 
-																									:decline_stock_in_order, :change_stock_status_delivering,
-																									:change_stock_status_delivered, :change_stock_status_returning, :change_stock_status_returned]
+																									:decline_stock_in_order, :change_stock_status_delivering]
 	respond_to :json
 
 	def get_my_order
@@ -92,14 +91,14 @@ class Api::V1::OrdersController < ApplicationController
   end
 
   def change_stock_status_delivered
-    member_order = current_user.orders.find_by_id(accept_and_decline_order_params[:order_id])
+    member_order = Order.find_by_id(accept_and_decline_order_params[:order_id])
     if !member_order
       render json: { errors: 'Order not found' }, status: 422 and return
     end
     if member_order.side != 'supplier'
       render json: { errors: 'Can\'t change your own order to delivered status' }, status: 422 and return
     end
-    member_stock = member_order.stocks.find_by_id(accept_and_decline_order_params[:stock_id])
+    member_stock = Stock.find_by_id(accept_and_decline_order_params[:stock_id])
     if !member_stock
       render json: { errors: 'Stock not found' }, status: 422 and return
     end
@@ -123,14 +122,14 @@ class Api::V1::OrdersController < ApplicationController
   end
 
   def change_stock_status_returning
-    member_order = current_user.orders.find_by_id(accept_and_decline_order_params[:order_id])
+    member_order = Orders.find_by_id(accept_and_decline_order_params[:order_id])
     if !member_order
       render json: { errors: 'Order not found' }, status: 422 and return
     end
     if member_order.side != 'supplier'
       render json: { errors: 'Can\'t change your own order to returning status' }, status: 422 and return
     end
-    member_stock = member_order.stocks.find_by_id(accept_and_decline_order_params[:stock_id])
+    member_stock = Stock.find_by_id(accept_and_decline_order_params[:stock_id])
     if !member_stock
       render json: { errors: 'Stock not found' }, status: 422 and return
     end
@@ -145,14 +144,14 @@ class Api::V1::OrdersController < ApplicationController
   end
 
   def change_stock_status_returned
-    member_order = current_user.orders.find_by_id(accept_and_decline_order_params[:order_id])
+    member_order = Order.find_by_id(accept_and_decline_order_params[:order_id])
     if !member_order
       render json: { errors: 'Order not found' }, status: 422 and return
     end
     if member_order.side != 'supplier'
       render json: { errors: 'Can\'t change your own order to returned status' }, status: 422 and return
     end
-    member_stock = member_order.stocks.find_by_id(accept_and_decline_order_params[:stock_id])
+    member_stock = Stock.find_by_id(accept_and_decline_order_params[:stock_id])
     if !member_stock
       render json: { errors: 'Stock not found' }, status: 422 and return
     end

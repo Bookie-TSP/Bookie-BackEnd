@@ -8,8 +8,8 @@ class Api::V1::StocksController < ApplicationController
       if temp_book.nil?
         render json: { errors: 'Book not found' }, status: 422
       else
-        if ( !(stock_params[:type] == 'sell') && !(stock_params[:type] == 'lend') )
-          render json: { errors: 'Wrong type' }, status: 422 and return
+        if stock_params[:quantity] < 1
+          render json: { errors: 'Wrong quantity' }, status: 422 and return
         end
         user_line_stocks = current_user.line_stocks
         temp_stock_for_check = Stock.new(stock_params.except(:quantity))
@@ -56,6 +56,7 @@ class Api::V1::StocksController < ApplicationController
 
     def stock_creation(book, line_stock_being_operated, params)
       stock_quantity = params[:quantity]
+      stock_temp = nil
       (1..stock_quantity).each do |i|
         stock_temp = line_stock_being_operated.stocks.build(params.except(:quantity))
         stock_temp.member_id = current_user.id

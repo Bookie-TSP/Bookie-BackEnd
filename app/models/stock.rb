@@ -7,8 +7,9 @@ class Stock < ActiveRecord::Base
   self.inheritance_column = :_type_disabled
 
 
-  validates_numericality_of :price, :only_integer => true, :greater_than_or_equal_to => 0
+  validates_numericality_of :price, :greater_than_or_equal_to => 0
   validates_inclusion_of :type, :in => %w( sell lend )
+  validates_inclusion_of :condition, :in => %w( new used )
 
   def member
   	temp_member = Member.find_by_id(self.member_id)

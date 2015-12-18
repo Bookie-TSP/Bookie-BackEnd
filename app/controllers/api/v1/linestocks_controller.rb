@@ -16,7 +16,8 @@ class Api::V1::LinestocksController < ApplicationController
                           member_id: line_stock.member_id, status: "stock", 
                           type: line_stock.type, price: line_stock.price, 
                           condition: line_stock.condition, duration: line_stock.duration,
-                          terms: line_stock.terms,description: line_stock.description)
+                          terms: line_stock.terms,description: line_stock.description,
+                          book: temp_book)
     if quantity == 0
       line_stock.stocks.destroy_all
       line_stock.quantity = 0

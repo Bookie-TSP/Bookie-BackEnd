@@ -9,7 +9,9 @@ class Book < ActiveRecord::Base
   validates_numericality_of :ISBN10, only_integer: true
 
   validates_length_of :ISBN13, :minimum => 13, :maximum => 13
-  validates_numericality_of :ISBN13, only_integer: true  
+  validates_numericality_of :ISBN13, only_integer: true
+
+  validates_numericality_of :pages, :only_integer => true, :greater_than_or_equal_to => 0, :allow_blank => true
 
 	include PgSearch
   pg_search_scope :search_title, :against => [:title]

@@ -122,7 +122,7 @@ class Api::V1::OrdersController < ApplicationController
   end
 
   def change_stock_status_returning
-    member_order = Orders.find_by_id(accept_and_decline_order_params[:order_id])
+    member_order = Order.find_by_id(accept_and_decline_order_params[:order_id])
     if !member_order
       render json: { errors: 'Order not found' }, status: 422 and return
     end

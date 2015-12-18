@@ -51,7 +51,6 @@ class Api::V1::CartsController < ApplicationController
       end
       begin
         month = checkout_params[:billing_card_expire_date].split('/')[0].to_i
-        logger.debug('Month = ' + month.to_s)
         temp_date = nil
         if month == 2
           temp_date = Date.strptime('28/'+checkout_params[:billing_card_expire_date], '%d/%m/%y')

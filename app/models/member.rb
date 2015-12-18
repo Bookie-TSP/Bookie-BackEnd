@@ -6,6 +6,10 @@ class Member < ActiveRecord::Base
 
   validates :auth_token, uniqueness: true
   validates :first_name, :last_name, :phone_number, :identification_number, presence: true
+  
+  validates_length_of :identification_number, :minimum => 13, :maximum => 13
+  validates_numericality_of :identification_number, only_integer: true
+
 	before_create :generate_authentication_token!
   has_many :addresses, dependent: :destroy
   has_many :line_stocks, dependent: :destroy

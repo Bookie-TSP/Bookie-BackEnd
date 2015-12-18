@@ -4,4 +4,9 @@ class Payment < ActiveRecord::Base
 
   validates_length_of :billing_card_number, :minimum => 16, :maximum => 16
   validates_length_of :billing_card_security_number, :minimum => 3, :maximum => 3
+
+  validates_numericality_of :billing_card_number, only_integer: true
+  validates_numericality_of :billing_card_security_number, only_integer: true
+
+  validates_inclusion_of :billing_type, :in => %w( Visa MasterCard AmericanExpress Discover )
 end

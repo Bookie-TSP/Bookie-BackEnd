@@ -6,6 +6,8 @@ class Stock < ActiveRecord::Base
   has_and_belongs_to_many :carts
   self.inheritance_column = :_type_disabled
 
+  validates_inclusion_of :type, :in => %w( sell lend )
+
   def member
   	temp_member = Member.find_by_id(self.member_id)
   	temp_member.as_json(:include => :addresses, :except => :auth_token)

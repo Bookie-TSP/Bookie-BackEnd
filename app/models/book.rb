@@ -5,6 +5,12 @@ class Book < ActiveRecord::Base
 	has_many :stocks, :dependent => :destroy
 	has_many :line_stocks, :dependent => :destroy
 
+  validates_length_of :ISBN10, :minimum => 10, :maximum => 10
+  validates_numericality_of :ISBN10, only_integer: true
+
+  validates_length_of :ISBN13, :minimum => 13, :maximum => 13
+  validates_numericality_of :ISBN13, only_integer: true  
+
 	include PgSearch
   pg_search_scope :search_title, :against => [:title]
   pg_search_scope :search_ISBN10, :against => [:ISBN10]

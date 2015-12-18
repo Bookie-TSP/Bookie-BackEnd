@@ -29,6 +29,7 @@ class Api::V1::LinestocksController < ApplicationController
       (line_stock.quantity..quantity-1).each do |i|
         temp_new_stock = line_stock.stocks.build(new_stock.attributes)
         temp_new_stock.book = temp_book
+        temp_new_stock.save
         line_stock.save
         logger.debug("I = " + i.to_s)
       end
